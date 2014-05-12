@@ -6,6 +6,7 @@
    function viewstudentlist($name){
        global $ldapconn;
 	   
+
 	   $res = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", "(ou=".$name.")");
         ldap_sort($ldapconn, $res, "cn");
 	   $entries = ldap_get_entries($ldapconn, $res);

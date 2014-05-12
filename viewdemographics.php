@@ -1,5 +1,3 @@
-
-
 <?php
        //Connect and bind to ldap server
 	include 'ldap_config.php'; 
@@ -93,7 +91,9 @@
 															echo '</table>';
 												
 											
-														}
+
+											}
+
 											else echo "Cannot connect to the database";
 											echo'	</div>
 											        <!-- tab for employees-->

@@ -4,7 +4,7 @@
 	include 'frag_sessions.php';
 	
 	// search for the logged in user in the directory
-	$sr=ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "uid=".$userUid."");
+	$sr=ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "uid=".$userUid);
 	$entries = ldap_get_entries($ldapconn, $sr);
 	
 	//get college name base on gidnumber (ex. 1006 - CA)  
@@ -16,7 +16,6 @@
 		$_SESSION['gidnumber'] = $entries[0]["gidnumber"][0];
 		$_SESSION['group'] = $group;
 	}
-
 ?>
 
 <!DOCTYPE html>
@@ -48,12 +47,13 @@
             </div> <!-- span3 -->
 
             <div class="span9">
-			    <div class="hero-unit">
-				
-				     <?php 
-			   if($activerole=='student')
+			    <div class="hero-unit">	
+			<?php 
+			   $userRole = $_SESSION['activerole'];
+			   $title=$_SESSION['title'] ;
+			   if($userRole=='student')
 			     include 'frag_profilestudent.php';
-			   else 	 
+			   else
 			     include 'frag_profileemployee.php';
 			?>
                 </div> <!-- hero -->				

@@ -1,6 +1,4 @@
-    
-	
-		
+
     <h1 style="float:left">Student Profile</h1>
 	<img src="tools/img/horredline.jpg"/>
     
@@ -30,7 +28,7 @@
 			  
 			echo "<tr>";
             echo "<td>College</td>";
-			echo "<td>".$group."</td>";
+			echo "<td>".$entries[0]["college"][0]."</td>";
 			echo "</tr>";
 			
 			echo "<tr>";

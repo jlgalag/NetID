@@ -1,4 +1,3 @@
-
 <?php
     
    // ini_set('display_errors','Off'); 
@@ -8,7 +7,9 @@
 	$ldapconfig['basedn'] = 'dc=uplb,dc=edu,dc=ph';
 	$username = 'admin';
 	$password = 'testtesttest';
-	$dn="cn=admin,dc=uplb,dc=edu,dc=ph";
+	//$dn= "cn=".$username $ldapconfig['basedn'];
+	$dn = "cn=admin,dc=uplb,dc=edu,dc=ph";
+
 
 	/*Connect to ldap server 10.0.100.58*/
 	$ldapconn=ldap_connect($ldapconfig['host'], $ldapconfig['port']);     
@@ -25,7 +26,5 @@
 	   echo "Unable to Connect..</br>";
     } 
 	
-  
+
 ?>
-  
-  

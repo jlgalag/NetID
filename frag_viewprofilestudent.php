@@ -19,12 +19,12 @@
 					    
 						echo "<tr>";
 			            echo "<td>Course</td>";
-						echo "<td>".$entries[0]["ou"][0]."</td>";
+						echo "<td>".$entries[0]["course"][0]."</td>";
 						echo "</tr>";
 						  
 						echo "<tr>";
 			            echo "<td>College</td>";
-						echo "<td>".$group."</td>";
+						echo "<td>".$entries[0]["college"][0]."</td>";
 						echo "</tr>";
 						
 						echo "<tr>";

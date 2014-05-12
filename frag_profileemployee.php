@@ -25,7 +25,7 @@
 			 
 			echo "<tr>";
             echo "<td>College/Office</td>";
-			echo "<td>".$group."</td>";
+			echo "<td>".$entries[0]["o"][0]."</td>";
 			echo "</tr>";
 			
 			echo "<tr>";

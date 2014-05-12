@@ -1,6 +1,4 @@
- 
-
- <?php
+<?php
    // if the user changed his role (ex. from employee to OCS)
    function changerole($newrole){
        $_SESSION['activerole'] = $newrole; 

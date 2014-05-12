@@ -129,4 +129,5 @@ if(isset($_SESSION['userUid']))
 </div> <!-- navbar -->
 
 </body>
+
 </html>

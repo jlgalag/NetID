@@ -135,9 +135,33 @@ function generatepassword() {
 	  for (count = 1; count < length; count++)
 	    document.getElementById('inputUserpassword').value += validchars.charAt(Math.floor(Math.random()
 	      * validchars.length));
-
-
 }
+
+/*********************************************************************/
+
+// generate random security question when adding an entry (student/employee)
+function generatesecurityquestion() {
+	var length = 10;
+	var validchars="abcdefghijklmnopqrstuvwxyz";
+	var count;
+	   document.getElementById('inputSecurityQuestion').value = "";
+	  for (count = 1; count < length; count++)
+	    document.getElementById('inputSecurityQuestion').value += validchars.charAt(Math.floor(Math.random()
+	      * validchars.length));
+}
+
+// generate random security answer when adding an entry (student/employee)
+function generatesecurityanswer() {
+	var length = 10;
+	var validchars="abcdefghijklmnopqrstuvwxyz";
+	var count;
+	   document.getElementById('inputSecurityAnswer').value = "";
+	  for (count = 1; count < length; count++)
+	    document.getElementById('inputSecurityAnswer').value += validchars.charAt(Math.floor(Math.random()
+	      * validchars.length));
+}
+
+/*********************************************************************/
 
 // show degree programs (add)
 function onCollegeChange(){
@@ -324,26 +348,38 @@ function addstudent(){
 	     var surname = document.getElementById('inputSurname').value.trim();
 	     var cn = surname + ", " + firstname + " " + middleinitial;
 	     var givenname =  	 firstname + " " + middleinitial;
-	     
-	     
-	     
+	     var college = document.getElementById('inputGidnumber').value.trim();
+
+	     var el = document.getElementById('inputGidnumber');
+	     var i=0;
+			for(i=0; i<el.options.length; i++) {
+			  if ( el.options[i].text.trim() == college) {
+			    el.selectedIndex = i;
+			    break;
+			  }
+			}
 	     info= {
 		       "uid" :            document.getElementById('inputUsername').value.trim(),
 		       "cn" :              cn,
 			   "sn" :              surname,
 		       "givenname" :       givenname ,
+		       "displayname" :     cn,
+		       "personaltitle" :     cn,
 		       "mail" :           document.getElementById('inputEmail').value.trim(),
 			   "studentnumber" :   document.getElementById('inputStudentnumber').value.trim(),
 		       "studenttype" :     document.getElementById('inputStudenttype').value.trim(),
 		       "gidnumber" :       document.getElementById('inputGidnumber').value.trim(),
-		       "ou" :              document.getElementById('inputOu').value.trim(),
-		       "userpassword" :    document.getElementById('inputUserpassword').value.trim(),    // to be converted to md5password in the php file
+		       "course" :              document.getElementById('inputOu').value.trim(),
+		       "college" : 			el.options[el.selectedIndex].text,
+		       "securityquestion" :    document.getElementById('inputSecurityQuestion').value.trim(),
+		       "securityanswer" :    document.getElementById('inputSecurityAnswer').value.trim(),
+		       "userpassword" :    document.getElementById('inputUserpassword').value.trim(),    // to be converted to ssha in the php file
+		       "uniqueIdentifierUPLB" :       document.getElementById('hiddenUidnumber').value.trim(),
 		       "uidnumber" :       document.getElementById('hiddenUidnumber').value.trim(),
 		       "homedirectory" :   document.getElementById('hiddenHomedirectory').value.trim() + document.getElementById('inputUsername').value.trim(),
 		       "title" :           document.getElementById('hiddenTitle').value.trim(),
-		       "shadowmax" :       document.getElementById('hiddenShadowmax').value.trim(),
-		       "shadowwarning" :   document.getElementById('hiddenShadowwarning').value.trim(),
-		       "loginshell" :  	   document.getElementById('hiddenLoginshell').value.trim()
+		       "loginshell" :  	   document.getElementById('hiddenLoginshell').value.trim(),
+		       "activestudent" :  	   document.getElementById('inputActive').value.trim()	
 			  	};
 	        
 			
@@ -357,35 +393,37 @@ function addstudent(){
 			msg += "</table>";
 			
 			
-			$.post("functions.php", { func: "checkstudentnumber", studentnumber : info['studentnumber'] },
-  function(data){
-    if(data.trim()=="OK") {
-       confirmmsg = "<h4 style='text-align:center;'>Corfirm Addition of Student</h4>" + msg;
-							           bootbox.confirm(confirmmsg,
-									     function(result) {
-										   var dn = "<?php echo $dn?>";
-										   if(result){    			   // the actual deletion of an entry
-										         $.ajax({
-												    type: "POST",
-													url: 'functions.php',
-												    //encodeURIComponent is to keep the '+' from changing to ' '.
-													data: 
-													{   info: info,
-													    dn: "uid=" + info['uid'] + ",ou=people,dc=uplb,dc=edu,dc=ph",
-													 	func: 'addentry' },
-												    success: function(data){
-														bootbox.alert(
-														     data, 
-														     function(){window.location = "viewprofile.php?uid=" + info['uid']+ "&title=student";
-															 });
-													}
-											    }); 
-											
-												}
-											})
-	}
-    else bootbox.alert(data.trim());	
-  }, "html");      
+			$.post("functions.php", 
+				{ func: "checkstudentnumber", uid : info['uid'], studentnumber : info['studentnumber']  },
+				  function(data){
+				    if(data.trim()=="OK") {
+				       confirmmsg = "<h4 style='text-align:center;'>Corfirm Addition of Student</h4>" + msg;
+											           bootbox.confirm(confirmmsg,
+													     function(result) {
+														   var dn = "<?php echo $dn?>";
+														   if(result){    			   // the actual deletion of an entry
+														         $.ajax({
+																    type: "POST",
+																	url: 'functions.php',
+																    //encodeURIComponent is to keep the '+' from changing to ' '.
+																	data: 
+																	{   info: info,
+																	    dn: "uniqueIdentifierUPLB=" + info['uniqueIdentifierUPLB'] + ",ou=people,dc=uplb,dc=edu,dc=ph",
+																	 	func: 'addentry' },
+																    success: function(data){
+																		bootbox.alert(
+																		     data, 
+																		     function(){window.location = "viewprofile.php?uid=" + info['uid']+ "&title=student";
+																			 });
+																	}
+															    }); 
+															
+																}
+															})
+					}
+				    else bootbox.alert(data.trim());	
+				  },
+				  "html");      
 	}			
 }
 
@@ -399,23 +437,39 @@ function addemployee(){
 	     var surname = document.getElementById('inputSurname').value.trim();
 	     var cn = surname + ", " + firstname + " " + middleinitial;
 	     var givenname =  	 firstname + " " + middleinitial;
+	     var o = document.getElementById('inputGidnumber').value.trim();
+
+	     var el = document.getElementById('inputGidnumber');
+	     var i=0;
+			for(i=0; i<el.options.length; i++) {
+			  if ( el.options[i].text.trim() == o) {
+			    el.selectedIndex = i;
+			    break;
+			  }
+			}
+
 	     info= {
+		       "uniqueIdentifierUPLB" :     document.getElementById('hiddenUidnumber').value.trim(),
 		       "uid" :            document.getElementById('inputUsername').value.trim(),
 		       "cn" :              cn,
 			   "sn" :              surname,
 		       "givenname" :       givenname ,
+		       "displayname" :      cn ,
+		       "personaltitle" : 	'Mr',
 		       "mail" :           document.getElementById('inputEmail').value.trim(),
 			   "employeenumber" :   document.getElementById('inputEmployeenumber').value.trim(),
 		       "employeetype" :     document.getElementById('inputEmployeetype').value.trim(),
 		       "gidnumber" :       document.getElementById('inputGidnumber').value.trim(),
 		       "ou" :              document.getElementById('inputOu').value.trim(),
+		       "o" : 				el.options[el.selectedIndex].text,
+		       "securityquestion" :    document.getElementById('inputSecurityQuestion').value.trim(),
+		       "securityanswer" :    document.getElementById('inputSecurityAnswer').value.trim(),
 		       "userpassword" :    document.getElementById('inputUserpassword').value.trim(),    // to be converted to md5password in the php file
 		       "uidnumber" :       document.getElementById('hiddenUidnumber').value.trim(),
 		       "homedirectory" :   document.getElementById('hiddenHomedirectory').value.trim() + document.getElementById('inputUsername').value.trim(),
 		       "title" :           document.getElementById('hiddenTitle').value.trim(),
-		       "shadowmax" :       document.getElementById('hiddenShadowmax').value.trim(),
-		       "shadowwarning" :   document.getElementById('hiddenShadowwarning').value.trim(),
-		       "loginshell" :  	 document.getElementById('hiddenLoginshell').value.trim()
+		       "loginshell" :  	 document.getElementById('hiddenLoginshell').value.trim(),
+		       "activeemployee" : document.getElementById('inputActive').value.trim()
 			  	};
 	        
 			

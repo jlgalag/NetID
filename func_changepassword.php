@@ -11,7 +11,7 @@
   $md5NewPwd = "{MD5}".preg_replace('/=+$/','',base64_encode(pack('H*',md5($newPwd))))."=="; 
   
   
-  $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'],  "(uid=" . $userUid . ")", array('userpassword'));
+  $sr = ldap_search($ldapconn, "ou=".$title.",ou=people,".$ldapconfig['basedn'],  "(uid=" . $userUid . ")", array('userpassword'));
   $entries = ldap_get_entries($ldapconn, $sr);
   
   if($entries[0]['userpassword'][0] == $md5Pwd){

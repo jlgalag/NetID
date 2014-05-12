@@ -7,14 +7,13 @@
 	   redirect("home.php");
 	
     // search for the current value of uidnumholder, this will be the the uidnumber of the entry to be added	
-	$search = ldap_search($ldapconn, $ldapconfig['basedn'], "(ou=uidnumholder)");
+	$search = ldap_search($ldapconn, "ou=numberholder,".$ldapconfig['basedn'], "cn=uidlatestnumber");
     $entry = ldap_get_entries($ldapconn, $search);
     $uidnumhorderdn = $entry[0]['dn'];	
-    $uidnumholder = $entry[0]['telexnumber'][0];
-	
-
+    $uidnumholder = $entry[0]['serialnumber'][0] +1;
 	
 ?> 
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -143,6 +142,30 @@
 						    <div class="controls" id="selectcourse">
 						    </div>
 						  </div>
+
+						  <!-- ********************************* -->
+
+						   <div class="control-group">
+						    <label class="control-label" for="inputSecurityQuestion">Security Question</label>
+						    <div class="controls">
+						      <div class="input-append">
+							  <input class="input-large uneditable-input" name="securityQuestion" type="text" id="inputSecurityQuestion" placeholder="Security Question" >
+						      <button class="btn" type="button" id="getsecurityqbtn" onclick="javascript:generatesecurityquestion()">Get Security Question</button>
+							  </div>
+							  <br/>
+							</div>
+						  </div>
+
+						  <div class="control-group">
+						    <label class="control-label" for="inputSecurityAnswer">Security Answer</label>
+						    <div class="controls">
+						      <div class="input-append">
+							  <input class="input-large uneditable-input" name="securityAnswer" type="text" id="inputSecurityAnswer" placeholder="Security Answer" >
+						      <button class="btn" type="button" id="getsecurityabtn" onclick="javascript:generatesecurityanswer()">Get Security Answer</button>
+							  </div>
+							  <br/>
+							</div>
+						  </div>
 						  <div class="control-group">
 						    <label class="control-label" for="inputUserPassword">Password</label>
 						    <div class="controls">
@@ -151,12 +174,27 @@
 						      <button class="btn" type="button" id="getpasswordbtn" onclick="javascript:generatepassword()">Get Password</button>
 							  </div>
 							  <br/>
-							  <br/>
-							  <button class="btn btn-primary" type="submit" name="addbutton">Save <i class="icon-ok icon-white"></i> </button>
-							  
 							</div>
 						  </div>
-						
+
+						  <div class="control-group">
+						    <label class="control-label" for="inputActive">Active</label>
+						    <div class="controls">
+						     <select name="inputActive" id="inputActive"  class="input-large">
+								       <option value="TRUE">Yes</option>
+								       <option value="FALSE">No</option>
+							 </select>
+						    </div>
+						  </div>
+						  
+
+						  <div class="control-group">
+						   <div class="controls">					
+							  <button class="btn btn-primary" type="submit" name="addbutton">Save <i class="icon-ok icon-white"></i> </button> 
+							</div>
+						  </div>
+
+						  <!-- ********************************* -->
 						   <!-- hiddden attributes-->
 						   <input type="hidden" id="hiddenUidnumber" name="uidnumber" value="<?php echo $uidnumholder?>"/>
 						   <input type="hidden" id="hiddenHomedirectory" name="homedirectory" value="/home/"/>  <!-- username will be appended -->
@@ -164,11 +202,13 @@
 						   <input type="hidden" id="hiddenShadowmax" name="shadowmax" value="9999"/>
 						   <input type="hidden" id="hiddenShadowwarning" name="" value="7"/>
 						   <input type="hidden" id="hiddenLoginshell" name="loginshell" value="/bin/bash"/>	
-						   <input type="hidden" id="hiddenObjectclass[0]" name="objectclass[0]" value="inetOrgPerson"/>	
-						   <input type="hidden" id="hiddenObjectclass[1]" name="objectclass[1]" value="posixAccount"/>	
-						   <input type="hidden" id="hiddenObjectclass[2]" name="objectclass[2]" value="top"/>	
-						   <input type="hidden" id="hiddenObjectclass[3]" name="objectclass[3]" value="shadowAccount"/>	
-                           <!-- objectclass -->						   
+						   <input type="hidden" id="hiddenObjectclass[0]" name="objectclass[0]" value="UPLBEntity"/>	
+						   <input type="hidden" id="hiddenObjectclass[1]" name="objectclass[1]" value="UPLBStudent"/>	
+						>	
+                           <!-- objectclass -->		
+
+
+
 					</form>
 		            </div>
                     

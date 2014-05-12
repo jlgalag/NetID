@@ -8,11 +8,13 @@
 	if(!($activerole=='OUR' || $activerole=='OCS' || $activerole=='ADMIN'))
 	   redirect("home.php");
 	   
+
 	$sr=ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(uid=".$userUid.")(title=student))");	
 	$entries = ldap_get_entries($ldapconn, $sr);
 	
 	if($_SESSION['gidnumber']==""){//get college name base on gidnumber       
 	    $csr = ldap_search($ldapconn, "ou=posixGroups,".$ldapconfig['basedn'], "(gidnumber=".$entries[0]["gidnumber"][0].")", array('cn'));			  
+
 		$entry = ldap_first_entry($ldapconn, $csr);
 		$ou = ldap_get_values($ldapconn, $entry,'cn');
 		$group= $ou[0]; 
@@ -221,9 +223,11 @@
      <!-- pagination does not work if include('frag_footer') is used -->	 
      <footer class='footer'>
 		<p style="font-size:8px; text-align:center; ">
-				University of the Philippines Los BaÃ±os<br/>
-				College Los BaÃ±os, Laguna 4031 Philippines</br/>
-				Copyright Â© 2012 University of the Philippines Los BaÃ±os. All Rights Reserved.
+
+				University of the Philippines Los Baños<br/>
+				College Los Baños, Laguna 4031 Philippines</br/>
+				Copyright © 2012 University of the Philippines Los Baños. All Rights Reserved.
+
 			</p>
 		   </div>	
     </footer>

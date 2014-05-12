@@ -76,8 +76,18 @@
 	// Edit password -own
 	 function changeownpassword($dn, $pwd, $mail){
 		global $ldapconn,$conn,$userUid;
-	  
-	 	   if($pwd['userPwd'] == $pwd['md5Pwd']){
+	 
+			$res = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph","uid=".$userUid);
+			$entries = ldap_get_entries($ldapconn, $res);
+			$rolecount = $entries['count'];
+			$uidNum = $entries[0]['uidnumber'][0];
+
+			$bind3 = ldap_bind($ldapconn, "uniqueIdentifierUPLB=".$uidNum.",ou=people,dc=uplb,dc=edu,dc=ph",$pwd['inputPwd']);
+
+			if(!$bind3){ 
+				echo "<p class='changepasswordnotif'>Incorrect Password</p>";
+			}
+			else{
 		        if($pwd['newPwd'] == $pwd['conPwd']){
 		            $changePwd= array("userpassword" => array($pwd['md5NewPwd']));
 		            $res= ldap_modify($ldapconn, $dn, $changePwd);
@@ -97,15 +107,15 @@
 									"If you didn't authorized this change, your account might have been hijacked.<br/> 
 									You are advised to go to UPLB NetID page if you wish to change your password.". "<br/><br/>".
 									"Sincerely,"."<br/>".
+
 									"UPLB NetID Account team". "<br/>";
 							sendmail($subject, $data,  $mail);
 						}
 						else echo "Please provide an email address.<br/>";
 					}
-					}
+				}
 				else echo "<p class='changepasswordnotif'>New Password and Confirm Password inputs are not the same.</p>";	
 		  }
-		  else  echo "<p class='changepasswordnotif'>Incorrect Password</p>"; 
 		  
 		  mysqli_close($conn);
     }
@@ -118,6 +128,7 @@
 		    if($pwd['newPwd'] == $pwd['conPwd']){
 		            $changePwd= array("userpassword" => array($pwd['md5NewPwd']));
 		            $res= ldap_modify($ldapconn, $dn, $changePwd);
+
 		            if($res){
 					    //insert into audit logs
 						date_default_timezone_set('Asia/Manila');
@@ -126,6 +137,7 @@
 				 	    
 						echo "<p class='changepasswordnotif'>Password successfully change</p>";
 						if($mail != NULL){
+
 							//SEND EMAIL
 							$subject = "NetId Account password change";
 							$data = "<p>Hi ".$mail."<br/>".
@@ -136,13 +148,12 @@
 									"Sincerely,"."<br/>".
 									"UPLB NetID Account team". "<br/>";
 							sendmail($subject, $data,  $mail);
-							}
+						}
 						else echo "Please provide an email address.<br/>";
 					
 					}
 			}		
 			else echo "<p class='changepasswordnotif'>New Password and Confirm Password inputs are not the same.</p>";	
-		 
 		  
 		  mysqli_close($conn);
     }
@@ -157,12 +168,12 @@
 			
 			echo  '<select name="ou" id="inputOu" class="input-large">';		
 			        echo "<option value='' disabled selected style='display:none;'>Select Course</option>";
+
 					while($row = mysqli_fetch_array($degreeprograms)){
 						echo '<option value="'.$row['name'].'">'.$row['title'].'</option>';
-					}
-				
-			echo '</select>';
-				
+					}		
+
+			echo '</select>';		
 		}
 		else echo "Cannot connect to the database";
 
@@ -177,7 +188,7 @@
 			$query = "SELECT * FROM degreeprograms WHERE gidnumber=".$gidnumber;
 			$degreeprograms = mysqli_query($conn, $query);
 			
-			echo  '<select name="ou" id="editOu" class="input-large"  required >';		
+			echo  '<select name="ou" id="editOu" class="input-large"  required >';
 			       while($row = mysqli_fetch_array($degreeprograms)){
 						echo '<option value="'.$row['name'].'"';
 						if($ou == $row['name']) echo ' selected';
@@ -190,14 +201,22 @@
 		else echo "Cannot connect to the database"; 
 		mysqli_close($conn);
     }
-	
-	function checkstudentnumber($studentnumber){
+
+	function checkstudentnumber($username,$studentnumber){
 	  global $ldapconn, $ldapconfig;
-	  $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(studentnumber=".$studentnumber.")");
+
+	  $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=student)(|(uid=".$username.")(studentnumber=".$studentnumber.")))");
 	  $count = ldap_count_entries($ldapconn, $sr).'</td>';
+/*
+	  $sr2 = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=employee)(uid=".$username.")");
+	  $count2 = ldap_count_entries($ldapconn, $sr2).'</td>';
+*/
 	  if($count > 0){
-	    echo "Student number ". $studentnumber. " already exists.";
+	    echo "Student number already exists.";
 	  }
+	  /*elseif ($count2 > 0) {
+	  	echo "Add Student Attributes";
+	  }*/
 	  else echo "OK";
 	}
 	
@@ -212,23 +231,47 @@
 	  else echo "OK";
 	}
 	
+	/**
+	*	@param String 	- String to be encrypted
+	*
+	*/
+	function encrypt($string){
+
+		$salt = sha1(rand());
+		$salt = substr($salt, 0, 4);
+
+		//return encrpted value
+		return $encrypted = "{SSHA}".base64_encode( sha1( $string . $salt, true) . $salt );
+	}
+
+
      function addentry($info, $dn){
         global $ldapconn, $ldapconfig, $userUid, $conn;
         $userpassword = $info['userpassword'];
-	    $info["objectclass"][0] = "inetOrgPerson";
-	    $info["objectclass"][1] = "posixAccount";
-	    $info["objectclass"][2] = "top";
-	    $info["objectclass"][3] = "shadowAccount";
+	    $info["objectclass"][0] = "UPLBEntity";
+	    
+	    //if add as student
+	    if(isset($info['studentnumber'])){
+	    	 $info["objectclass"][1] = "UPLBStudent";
+	    }
+	    //if add as employee
+	    elseif (isset($info['employeenumber'])) {
+	    	$info["objectclass"][1] = "UPLBEmployee";
+	    }
 
-	    $info['userpassword'] = "{MD5}".preg_replace('/=+$/','',base64_encode(pack('H*',md5($userpassword))))."==";
+	    $info['securityquestion'] = encrypt($info['securityquestion']);
+	    $info['securityanswer'] = encrypt($info['securityanswer']);
+		$info['userpassword'] = encrypt($info['userpassword']);
+
         $add = ldap_add($ldapconn, $dn, $info);
         
 		if($add){
-       	//increase uidnumberholder
-        $dnuidnumberholder = 'ou=numberholder,dc=uplb,dc=edu,dc=ph';		
-	    $newuidnumholder = array("telexnumber" => array($info['uidnumber'] + 1));
-	    $moduid = ldap_modify($ldapconn, $dnuidnumberholder, $newuidnumholder);
+       		//modify uidLatestNumber
+	        $dnuidnumberholder = 'cn=uidLatestNumber,ou=numberholder,dc=uplb,dc=edu,dc=ph';		
+		    $newuidnumholder = array("serialnumber" => array($info['uidnumber']));
+		    $moduid = ldap_modify($ldapconn, $dnuidnumberholder, $newuidnumholder);
         }
+        else{echo ldap_error($ldapconn ); echo $info["objectclass"][1];}
 	    if($add && $moduid) {
 		     // add to audit log
 			   date_default_timezone_set('Asia/Manila');
@@ -278,7 +321,6 @@
    
      function searchstudent($filter){
 	   global $ldapconn;
-
  	   //$editmail = array("mail" => array($newmail));
        $res = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", $filter);
        $entries = ldap_get_entries($ldapconn, $res);
@@ -630,8 +672,8 @@
 					$pwd['inputPwd'] = $_POST['pwd'];
 					$pwd['newPwd'] = $_POST['newPwd'];
 					$pwd['conPwd'] = $_POST['conPwd'];
-					$pwd['md5Pwd'] = "{MD5}".preg_replace('/=+$/','',base64_encode(pack('H*',md5($_POST['pwd']))))."=="; 
-                    $pwd['md5NewPwd'] = "{MD5}".preg_replace('/=+$/','',base64_encode(pack('H*',md5($_POST['newPwd']))))."=="; 
+					//encrypt new password
+                    $pwd['md5NewPwd'] = encrypt($_POST['newPwd']);
                     changeownpassword($dn, $pwd, $mail);
 					break;
         
@@ -642,7 +684,8 @@
 					$pwd['userPwd'] = $_POST['userpassword'];
 					$pwd['newPwd'] = $_POST['newPwd'];
 					$pwd['conPwd'] = $_POST['conPwd'];
-					$pwd['md5NewPwd'] = "{MD5}".preg_replace('/=+$/','',base64_encode(pack('H*',md5($_POST['newPwd']))))."=="; 
+					//encrypt new password
+                    $pwd['md5NewPwd'] = encrypt($_POST['newPwd']);
                     changeotherpassword($dn, $pwd, $uid, $mail);
 					break;
 					
@@ -709,9 +752,6 @@
 						$_SESSION['title'] = 'student';
 		            $_SESSION['activerole'] = $activerole;
 					break;
-		
-			
-		
 		case 'adddegreeprogram':
 		            $info['name'] =  $_POST['name'];
 		            $info['title'] =  $_POST['title'];
@@ -737,6 +777,4 @@
      
 	}
 	
-
-
 ?>
