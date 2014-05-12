@@ -204,7 +204,7 @@
 						   <input type="hidden" id="hiddenLoginshell" name="loginshell" value="/bin/bash"/>	
 						   <input type="hidden" id="hiddenObjectclass[0]" name="objectclass[0]" value="UPLBEntity"/>	
 						   <input type="hidden" id="hiddenObjectclass[1]" name="objectclass[1]" value="UPLBStudent"/>	
-						>	
+							
                            <!-- objectclass -->		
 
 

@@ -202,42 +202,32 @@
 		mysqli_close($conn);
     }
 
-	function checkstudentnumber($username,$studentnumber){
+	function checkstudentnumber($username,$studentnumber,$cn){
 	  global $ldapconn, $ldapconfig;
 
 	  $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=student)(|(uid=".$username.")(studentnumber=".$studentnumber.")))");
 	  $count = ldap_count_entries($ldapconn, $sr).'</td>';
 
-	  $sr2 = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=employee)(uid=".$username."))");
+	  $sr2 = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=employee)(|(uid=".$username.")(cn=".$cn.")))");
 	  $count2 = ldap_count_entries($ldapconn, $sr2).'</td>';
 
-	  if($count > 0){
-	    echo "Student number already exists.";
-	  }
-	  elseif ($count2 > 0) {
-	  	echo "Add Student Attributes";
-	  }
-	  
-
+	  if($count > 0) echo "Student number already exists.";
+	  else if ($count2 > 0) echo "ADD";
 	  else echo "OK";
 	}
 	
-	function checkemployeenumber($username, $employeenumber){
+	function checkemployeenumber($username, $employeenumber,$cn){
 	  global $ldapconn, $ldapconfig;
 	  
  
 	  $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=employee)(|(uid=".$username.")(employeenumber=".$employeenumber.")))");
 	  $count = ldap_count_entries($ldapconn, $sr).'</td>';
 
-	  $sr2 = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=student)(uid=".$username."))");
+	  $sr2 = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=student)(uid=".$username.")(cn=".$cn."))");
 	  $count2 = ldap_count_entries($ldapconn, $sr2).'</td>';
 
-	  if($count > 0){
-	    echo "Employee number ". $employeenumber. " already exists.";
-	  }
-	  elseif ($count2 > 0) {
-	  	echo "Add Employee Attributes";
-	  }
+	  if($count > 0)  echo "Employee number already exists.";
+	  else if ($count2 > 0)  echo "ADD";
 	  else echo "OK";
 	}
 	
@@ -309,7 +299,25 @@
 		mysqli_close($conn);
 	 }	 
    
-     
+   	 /**
+   	 * @param Array - $info 	attributes to be added
+   	 *		  String - $dn 		distinguished name of an LDAP entity
+   	 */
+     function addattr($info, $dn, $uid){
+     	global $ldapconn, $ldapconfig, $userUid, $conn;
+
+     	$add = ldap_mod_add($ldapconn, $dn, $info);
+        
+		if(!$add) echo ldap_error($ldapconn);
+       	else {
+       		date_default_timezone_set('Asia/Manila');
+			$query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','insert','".$_SERVER["REMOTE_ADDR"]."','".$uid."')";
+	        $insert =mysqli_query($conn, $query);
+       		echo "Attribute Successfully Added";
+       	}
+     }
+
+
 		 // Edit email address
 	 function editentry($info, $dn){
 	   global $ldapconn, $conn, $userUid;
@@ -657,12 +665,31 @@
 		
 		 
 	}
+
+	/**
+	*	@param String - $cn 	complete name of UPLBEntity
+	*							format (Surname, First Name, Middle Initial.)
+	*		   
+	*/
+	function searchUniqueUPLBIdentifier($cn){
+		global $ldapconn, $ldapconfig;
+
+		$ress = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", "cn=".$cn);
+        $ents = ldap_get_entries($ldapconn, $ress);
+		$identifier =  $ents[0]['uniqueidentifieruplb'][0];
+		echo $identifier;
+
+	}
 	
     // function is the variable passed by aajax, it will then be the basis of which function to execute
     $function = $_POST['func']; 
 	
     switch($function)
 	{
+	    case 'searchUniqueUPLBIdentifier':
+	    			$cn = $_POST['cn'];
+	    			searchUniqueUPLBIdentifier($cn);
+	    			break;
 	    case 'delete' :
 	                $dn = $_POST['dn'];
 	                $uid = $_POST['uid'];
@@ -713,13 +740,15 @@
         case 'checkstudentnumber':
                     $studentnumber = $_POST['studentnumber'];
                     $uid = $_POST['uid'];
-                    checkstudentnumber($uid,$studentnumber);
+                    $cn = $_POST['cn'];
+                    checkstudentnumber($uid,$studentnumber,$cn);
                     break;					
 		
 		 case 'checkemployeenumber':
                     $employeenumber = $_POST['employeenumber'];
                     $uid = $_POST['uid'];
-                    checkemployeenumber($uid, $employeenumber);
+                    $cn = $_POST['cn'];
+                    checkemployeenumber($uid, $employeenumber,$cn);
                     break;	
 					
 		case 'addentry':
@@ -728,8 +757,11 @@
 					addentry($info, $dn);
 					break;
 
-		case 'addstudentattr':
-					addstudentattr();
+		case 'addattr':
+					$info = $_POST['info1'];
+					$dn = $_POST['dn'];
+					$uid = $_POST['uid'];
+					addattr($info,$dn,$uid);
 					break;
 
 		case 'editentry':

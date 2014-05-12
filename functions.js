@@ -137,7 +137,6 @@ function generatepassword() {
 	      * validchars.length));
 }
 
-/*********************************************************************/
 
 // generate random security question when adding an entry (student/employee)
 function generatesecurityquestion() {
@@ -161,7 +160,6 @@ function generatesecurityanswer() {
 	      * validchars.length));
 }
 
-/*********************************************************************/
 
 // show degree programs (add)
 function onCollegeChange(){
@@ -392,38 +390,96 @@ function addstudent(){
 			
 			msg += "</table>";
 			
-			
-			$.post("functions.php", 
-				{ func: "checkstudentnumber", uid : info['uid'], studentnumber : info['studentnumber']  },
-				  function(data){
-				    if(data.trim()=="OK") {
-				       confirmmsg = "<h4 style='text-align:center;'>Corfirm Addition of Student</h4>" + msg;
-											           bootbox.confirm(confirmmsg,
-													     function(result) {
-														   var dn = "<?php echo $dn?>";
-														   if(result){    			   // the actual deletion of an entry
-														         $.ajax({
-																    type: "POST",
-																	url: 'functions.php',
-																    //encodeURIComponent is to keep the '+' from changing to ' '.
-																	data: 
-																	{   info: info,
-																	    dn: "uniqueIdentifierUPLB=" + info['uniqueIdentifierUPLB'] + ",ou=people,dc=uplb,dc=edu,dc=ph",
-																	 	func: 'addentry' },
-																    success: function(data){
-																		bootbox.alert(
-																		     data, 
-																		     function(){window.location = "viewprofile.php?uid=" + info['uid']+ "&title=student";
-																			 });
-																	}
-															    }); 
-															
-																}
-															})
+			 $.ajax({
+			    type: "POST",
+				url: 'functions.php',
+				data: 
+				{   uid : info['uid'],
+					studentnumber : info['studentnumber'],
+					cn : info['cn'],
+				 	func: 'checkstudentnumber' },
+			    success: function(data){
+					if($.trim(data)=="OK"){
+						confirmmsg = "<h4 style='text-align:center;'>Confirm Addition of Student</h4>" + msg;
+				           bootbox.confirm(confirmmsg,
+						     function(result) {
+							   var dn = "<?php echo $dn?>";
+							   if(result){    
+							         $.ajax({
+									    type: "POST",
+										url: 'functions.php',
+										data: 
+										{   info: info,
+										    dn: "uniqueIdentifierUPLB=" + info['uniqueIdentifierUPLB'] + ",ou=people,dc=uplb,dc=edu,dc=ph",
+										 	func: 'addentry' },
+									    success: function(data){
+											bootbox.alert(
+											     data, 
+											     function(){window.location = "viewprofile.php?uid=" + info['uid']+ "&title=student";
+												 });
+										}
+								    }); 
+								
+									}
+								})
 					}
-				    else bootbox.alert(data.trim());	
-				  },
-				  "html");      
+					else if($.trim(data)=="ADD"){
+						var uniqueidentifieruplb = '';
+
+						info1= {
+						   "objectclass"	: 'UPLBStudent',
+					       "studentnumber" :   document.getElementById('inputStudentnumber').value.trim(),
+					       "studenttype" :     document.getElementById('inputStudenttype').value.trim(),
+					       "course" :              document.getElementById('inputOu').value.trim(),
+					       "college" : 			el.options[el.selectedIndex].text,
+					       "activestudent" :  	   document.getElementById('inputActive').value.trim()	
+					  	};
+
+						 $.ajax({
+							    type: "POST",
+								url: 'functions.php',
+							    data: 
+								{   
+								    cn : cn,
+								 	func: 'searchUniqueUPLBIdentifier'
+								},
+							    success: function(data){
+									var uniqueidentifieruplb = $.trim(data);
+
+									confirmmsg = "<h4 style='text-align:center;'>Confirm Addition of Student</h4>" + msg;
+						            bootbox.confirm(confirmmsg,
+								      function(result) {
+									   var dn = "<?php echo $dn?>";
+									   if(result){    
+									         $.ajax({
+												    type: "POST",
+													url: 'functions.php',
+													data: 
+													{   info1: info1,
+													    dn: "uniqueidentifieruplb=" + uniqueidentifieruplb + ",ou=people,dc=uplb,dc=edu,dc=ph",
+													 	uid : document.getElementById('inputUsername').value.trim(),
+													 	func: 'addattr' },
+												    success: function(data){
+														bootbox.alert(
+														     data, 
+														     function(){window.location = "viewprofile.php?uid=" + info['uid']+ "&title=student";
+															 });
+													}
+											});
+										
+											}
+									  })
+								}
+								
+						   }); 
+					}
+					else{
+						bootbox.alert($.trim(data));
+					}
+				}
+		    }); 
+
+
 	}			
 }
 
@@ -481,36 +537,95 @@ function addemployee(){
 			   }
 			
 			msg += "</table>";
-	     
-		   $.post("functions.php", { func: "checkemployeenumber", uid : info['uid'], employeenumber : info['employeenumber'] },
-  function(data){
-    if(data.trim()=="OK") {
-     confirmmsg = "<h4 style='text-align:center;'>Corfirm Addition of Employee</h4>" + msg;
-							           bootbox.confirm(confirmmsg,
-									     function(result) {
-										   var dn = "<?php echo $dn?>";
-										   if(result){    			   // the actual deletion of an entry
-										         $.ajax({
+
+			 $.ajax({
+			    type: "POST",
+				url: 'functions.php',
+				data: 
+				{   uid : info['uid'],
+					employeenumber: info['employeenumber'],
+					cn : info['cn'],
+				 	func: 'checkemployeenumber' },
+			    success: function(data){
+					if($.trim(data)=="OK"){
+						confirmmsg = "<h4 style='text-align:center;'>Confirm Addition of Employee</h4>" + msg;
+				           bootbox.confirm(confirmmsg,
+						     function(result) {
+							   var dn = "<?php echo $dn?>";
+							   if(result){    
+							         $.ajax({
+									    type: "POST",
+										url: 'functions.php',
+										data: 
+										{   info: info,
+										    dn: "uniqueIdentifierUPLB=" + info['uniqueIdentifierUPLB'] + ",ou=people,dc=uplb,dc=edu,dc=ph",
+										 	func: 'addentry' },
+									    success: function(data){
+											bootbox.alert(
+											     data, 
+											     function(){window.location = "viewprofile.php?uid=" + info['uid']+ "&title=employee";
+												 });
+										}
+								    }); 
+								
+									}
+								})
+					}
+					else if($.trim(data)=="ADD"){
+						var uniqueidentifieruplb = '';
+
+						info1= {
+						   "objectclass"	: 'UPLBEmployee',
+						   "employeenumber" :   document.getElementById('inputEmployeenumber').value.trim(),
+					       "employeetype" :     document.getElementById('inputEmployeetype').value.trim(),
+					       "ou" :              document.getElementById('inputOu').value.trim(),
+					       "o" : 				el.options[el.selectedIndex].text,
+					       "activeemployee" : document.getElementById('inputActive').value.trim()
+					  	};
+
+						 $.ajax({
+							    type: "POST",
+								url: 'functions.php',
+							    data: 
+								{   
+								    cn : cn,
+								 	func: 'searchUniqueUPLBIdentifier'
+								},
+							    success: function(data){
+									var uniqueidentifieruplb = $.trim(data);
+
+									confirmmsg = "<h4 style='text-align:center;'>Confirm Addition of Employee</h4>" + msg;
+						            bootbox.confirm(confirmmsg,
+								      function(result) {
+									   var dn = "<?php echo $dn?>";
+									   if(result){    
+									         $.ajax({
 												    type: "POST",
 													url: 'functions.php',
-												    //encodeURIComponent is to keep the '+' from changing to ' '.
 													data: 
-													{   info: info,
-													    dn: "uid=" + info['uid'] + ",ou=people,dc=uplb,dc=edu,dc=ph",
-													 	func: 'addentry' },
+													{   info1: info1,
+													    dn: "uniqueidentifieruplb=" + uniqueidentifieruplb + ",ou=people,dc=uplb,dc=edu,dc=ph",
+													 	uid : document.getElementById('inputUsername').value.trim(),
+													 	func: 'addattr' },
 												    success: function(data){
 														bootbox.alert(
 														     data, 
 														     function(){window.location = "viewprofile.php?uid=" + info['uid']+ "&title=employee";
 															 });
 													}
-											    }); 
-											
-												}
-											});		
-	}
-    else bootbox.alert(data.trim());	
-  }, "html");      
+											});
+										
+											}
+									  })
+								}
+								
+						   }); 
+					}
+					else{
+						bootbox.alert($.trim(data));
+					}
+				}
+		    });    
 	}		  	    		   
 }
 
@@ -969,10 +1084,6 @@ function changeactiverole(activerole){
 		}); 
 			
 }
-
-
-	
-
 
 
 function adddegreeprogram(){
