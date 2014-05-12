@@ -482,7 +482,7 @@ function addemployee(){
 			
 			msg += "</table>";
 	     
-		   $.post("functions.php", { func: "checkemployeenumber", employeenumber : info['employeenumber'] },
+		   $.post("functions.php", { func: "checkemployeenumber", uid : info['uid'], employeenumber : info['employeenumber'] },
   function(data){
     if(data.trim()=="OK") {
      confirmmsg = "<h4 style='text-align:center;'>Corfirm Addition of Employee</h4>" + msg;
