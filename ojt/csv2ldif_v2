@@ -162,8 +162,6 @@ foreach $line (<INPUT_CSV>)  {
 		}
 
 =cut
-#obtain the cn of each entry to act as an identifier for it. this will be used to check for existing entries
- 	$identifier = &cnProducer;
 #store employee/student number to determine whether an entities objectClass
  	$eNumber = $tokens[0];
 #check if entity is a student or an employee
@@ -178,6 +176,8 @@ foreach $line (<INPUT_CSV>)  {
 		$flag = 1;
 		&fixTokensCase;
 	}
+#obtain the cn of each entry to act as an identifier for it. this will be used to check for existing entries
+ 	$identifier = &cnProducer;
 #determines if there is already a duplicate entry in the server. the function would return a value that would decide what to do
  	$branch = &findDuplicate;
  #if returned value is 4, there is no duplicate therefore it would be added in the server

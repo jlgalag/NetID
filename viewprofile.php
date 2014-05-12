@@ -16,7 +16,7 @@
 	$dn = $entries[0]['dn'];  // to be used for deletion or removing the user from the directory
 	
 	//search for the corresponding group of the gid number ex. 1000 - OC
-	$csr = ldap_search($ldapconn, "ou=group,".$ldapconfig['basedn'], "(gidnumber=".$entries[0]["gidnumber"][0].")", array('cn'));			  
+	$csr = ldap_search($ldapconn, "ou=posixGroups,".$ldapconfig['basedn'], "(gidnumber=".$entries[0]["gidnumber"][0].")", array('cn'));			  
 	$entry = ldap_first_entry($ldapconn, $csr);
 	$ou = ldap_get_values($ldapconn, $entry,'cn');
 	$group= $ou[0];  

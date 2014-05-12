@@ -639,6 +639,16 @@ function editentry(title, dn)
 	   var givenname = document.getElementById('editGivenname').value.trim(); 	 
 	   var surname = document.getElementById('editSurname').value.trim();
 	   var cn = surname + ", " + givenname;
+	  	var o = document.getElementById('editGidnumber').value.trim();
+	   var e1 = document.getElementById('editGidnumber');
+	   var i;
+	   for(i = 0; i<e1.options.length; i++){
+	   		if(e1.options[i].text.trim() == o) {
+	   			e1.selectedIndex = i;
+	   			break;
+	   		}
+
+	   }
 	   var info;
 	   
 	   info= {
@@ -647,9 +657,16 @@ function editentry(title, dn)
 		   "sn" :             surname,
 	       "givenname" :      givenname,
 	       "mail" :           document.getElementById('editEmail').value.trim(),
-		   "gidnumber" :       document.getElementById('editGidnumber').value.trim(),
-	       "ou" :              document.getElementById('editOu').value.trim(),
+		   "gidnumber" :       document.getElementById('editGidnumber').value.trim()
 	        };
+
+	    if(title=="student"){
+	    	info['course'] = document.getElementById('editOu').value.trim();
+	    	info['college'] = e1.options[e1.selectedIndex].text;
+	    }else if(title=="employee"){
+	    	info['ou'] = document.getElementById('editOu').value.trim();
+	    	info['o'] = e1.options[e1.selectedIndex].text;
+	    }
 		// validate inputs	
        if(info['givenname']==""){
 	       $("#editGivenname").after("<br><span class='error'>Required</span>");
@@ -682,14 +699,26 @@ function editentry(title, dn)
 		   }
 	   }
 	   
-	   if(info['ou']==""){
-	       $("#editOu").after("<br><span class='error'>Required</span>");
-	       submit = 0;
-	   }
-	   else if(info['ou'].length < 2){
-	       $("#editOu").after("<br><span class='error'>Input too short</span>");
-	       submit = 0;
-       }
+	   if(title=="employee"){
+		   if(info['ou']==""){
+		       $("#editOu").after("<br><span class='error'>Required</span>");
+		       submit = 0;
+		   }
+		   else if(info['ou'].length < 2){
+		       $("#editOu").after("<br><span class='error'>Input too short</span>");
+		       submit = 0;
+	       }
+	    }else if(title=="student"){
+	    	 if(info['course']==""){
+		       $("#editOu").after("<br><span class='error'>Required</span>");
+		       submit = 0;
+		   }
+		   else if(info['course'].length < 2){
+		       $("#editOu").after("<br><span class='error'>Input too short</span>");
+		       submit = 0;
+	       }
+
+	    }
 	   
 	    
 		if(submit==1){

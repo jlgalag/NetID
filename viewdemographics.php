@@ -78,7 +78,7 @@
 																	echo '<tr>';
 																	echo '<td>'.$row2['name'].'</td>';
 																	echo '<td>'.$row2['title'].'</td>';
-																	$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(ou=".$row2['name'].")(gidnumber=".$row2['gidnumber']."))");
+																	$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(course=".$row2['name'].")(gidNumber=".$row2['gidnumber']."))");
 																	$count = ldap_count_entries($ldapconn, $sr);
 																	echo '<td>'.$count.'</td>';
 																	echo '</tr>';
