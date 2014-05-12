@@ -1,0 +1,742 @@
+<?php
+    require 'tools/PHPMailer_5.2.4/class.phpmailer.php';
+   	require 'ldap_config.php'; 
+	require 'frag_sessions.php';
+    $conn = mysqli_connect('localhost','root','','netid');
+
+	// Check connection
+	if (mysqli_connect_errno($conn))
+		 echo "Failed to connect to MySQL: " . mysqli_connect_error();
+		 
+    function sendmail($subject, $data, $to){
+		$from = "itcspmanegr@uplb.edu.ph";
+		$mail = new PHPMailer;
+
+
+		$mail->IsSMTP();  // telling the class to use SMTP
+		$mail->Host     = "202.92.144.18"; // SMTP server
+		$mail->SMTPAuth - true;
+		$mail->SMTPDebug = 1;
+		$mail->Port = 25;
+		$mail->Username="itcspmanager";
+		$mail->Password="1tc5pm4n4g3r";
+
+		$mail->IsHTML(true); 
+
+		$mail->From     = $from;
+		$mail->FromName = "UPLB NETID";
+		$mail->AddAddress($to);
+
+		$mail->Subject  = $subject;
+		$mail->Body     = $data;
+		$mail->WordWrap = 100;
+
+		if(!$mail->Send()) {
+		  echo 'Message was not sent.';
+		  echo 'Mailer error: ' . $mail->ErrorInfo;
+		} else {
+		  echo 'Message has been sent to '. $to;
+		}
+	}
+	
+	// Delete an entry in the directory
+    function delete($dn,$uid){
+	   global $ldapconn,$conn,$userUid;
+	   $res = ldap_delete($ldapconn, $dn);
+	   
+	   if($res){
+	        //insert to audit logs
+	        date_default_timezone_set('Asia/Manila');
+			$query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','delete','".$_SERVER["REMOTE_ADDR"]."','".$uid."')";
+	        $insert =mysqli_query($conn, $query);
+			   
+			echo "Entry successfully deleted."; }
+	   else      echo ldap_error($ldapconn );
+	    
+       mysqli_close($conn);		
+	}
+	
+	 // Edit email address
+	 function editmail($dn, $newmail){
+	   global $ldapconn,$conn,$userUid;
+	    //insert to audit logs
+	    date_default_timezone_set('Asia/Manila');
+		$query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','change email','".$_SERVER["REMOTE_ADDR"]."','".$userUid."')";
+	    $insert =mysqli_query($conn, $query);
+ 	    $editmail = array("mail" => array($newmail));
+        $res = ldap_modify($ldapconn, $dn, $editmail);
+      
+	   if($res) {
+	      echo $newmail; }
+	   else      echo ldap_error($ldapconn );
+	   
+	   mysqli_close($conn);
+	}
+	
+	// Edit password -own
+	 function changeownpassword($dn, $pwd, $mail){
+		global $ldapconn,$conn,$userUid;
+	  
+	 	   if($pwd['userPwd'] == $pwd['md5Pwd']){
+		        if($pwd['newPwd'] == $pwd['conPwd']){
+		            $changePwd= array("userpassword" => array($pwd['md5NewPwd']));
+		            $res= ldap_modify($ldapconn, $dn, $changePwd);
+		            if($res){
+					    //insert into audit logs
+						date_default_timezone_set('Asia/Manila');
+						$query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','change password','".$_SERVER["REMOTE_ADDR"]."','".$userUid."')";
+					    $insert =mysqli_query($conn, $query);
+				 	    
+						echo "<p class='changepasswordnotif'>Password successfully change</p>";
+						if($mail != NULL){
+						//SEND EMAIL
+						    $subject = "NetID Account password change";
+							$data = "<p>Hi ".$mail."<br/>".
+							        "The password of your NetID account was recently changed. <br/>". 
+									"If you made this change, you don't need to do anything more."."<br/>".
+									"If you didn't authorized this change, your account might have been hijacked.<br/> 
+									You are advised to go to UPLB NetID page if you wish to change your password.". "<br/><br/>".
+									"Sincerely,"."<br/>".
+									"UPLB NetID Account team". "<br/>";
+							sendmail($subject, $data,  $mail);
+						}
+						else echo "Please provide an email address.<br/>";
+					}
+					}
+				else echo "<p class='changepasswordnotif'>New Password and Confirm Password inputs are not the same.</p>";	
+		  }
+		  else  echo "<p class='changepasswordnotif'>Incorrect Password</p>"; 
+		  
+		  mysqli_close($conn);
+    }
+    
+	// Edit password - other
+	 function changeotherpassword($dn, $pwd, $uid, $mail){
+		global $ldapconn,$conn,$userUid;
+	  
+	 	  
+		    if($pwd['newPwd'] == $pwd['conPwd']){
+		            $changePwd= array("userpassword" => array($pwd['md5NewPwd']));
+		            $res= ldap_modify($ldapconn, $dn, $changePwd);
+		            if($res){
+					    //insert into audit logs
+						date_default_timezone_set('Asia/Manila');
+						$query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','change password','".$_SERVER["REMOTE_ADDR"]."','".$uid."')";
+					    $insert =mysqli_query($conn, $query);
+				 	    
+						echo "<p class='changepasswordnotif'>Password successfully change</p>";
+						if($mail != NULL){
+							//SEND EMAIL
+							$subject = "NetId Account password change";
+							$data = "<p>Hi ".$mail."<br/>".
+							        "The password of your NetID account was recently changed.<br/>". 
+									"If you made this change, you don't need to do anything more."."<br/>".
+									"If you didn't authorized this change, your account might have been hijacked. 
+									You are advised to go to UPLB NetID page if you wish to change your password.". "<br/><br/>".
+									"Sincerely,"."<br/>".
+									"UPLB NetID Account team". "<br/>";
+							sendmail($subject, $data,  $mail);
+							}
+						else echo "Please provide an email address.<br/>";
+					
+					}
+			}		
+			else echo "<p class='changepasswordnotif'>New Password and Confirm Password inputs are not the same.</p>";	
+		 
+		  
+		  mysqli_close($conn);
+    }
+	
+    //show degreee programs on select for add
+    function selectdegreeprograms($gidnumber){
+	     global $conn;
+		 // Check connection
+		if (!mysqli_connect_errno($conn)){
+			$query = "SELECT * FROM degreeprograms WHERE gidnumber=".$gidnumber;
+			$degreeprograms = mysqli_query($conn, $query);
+			
+			echo  '<select name="ou" id="inputOu" class="input-large">';		
+			        echo "<option value='' disabled selected style='display:none;'>Select Course</option>";
+					while($row = mysqli_fetch_array($degreeprograms)){
+						echo '<option value="'.$row['name'].'">'.$row['title'].'</option>';
+					}
+				
+			echo '</select>';
+				
+		}
+		else echo "Cannot connect to the database";
+
+        mysqli_close($conn);		
+    }	 
+   
+     //show degreee programs on select for edit
+    function editselectdegreeprograms($gidnumber, $ou){
+	     global $conn;
+		 // Check connection
+		if (!mysqli_connect_errno($conn)){
+			$query = "SELECT * FROM degreeprograms WHERE gidnumber=".$gidnumber;
+			$degreeprograms = mysqli_query($conn, $query);
+			
+			echo  '<select name="ou" id="editOu" class="input-large"  required >';		
+			       while($row = mysqli_fetch_array($degreeprograms)){
+						echo '<option value="'.$row['name'].'"';
+						if($ou == $row['name']) echo ' selected';
+						echo '>'.$row['title'].'</option>';
+					}
+				
+			echo '</select>';
+				
+		}
+		else echo "Cannot connect to the database"; 
+		mysqli_close($conn);
+    }
+	
+	function checkstudentnumber($studentnumber){
+	  global $ldapconn, $ldapconfig;
+	  $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(studentnumber=".$studentnumber.")");
+	  $count = ldap_count_entries($ldapconn, $sr).'</td>';
+	  if($count > 0){
+	    echo "Student number ". $studentnumber. " already exists.";
+	  }
+	  else echo "OK";
+	}
+	
+	function checkemployeenumber($employeenumber){
+	  global $ldapconn, $ldapconfig;
+	  
+	  $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(employeenumber=".$employeenumber.")");
+	  $count = ldap_count_entries($ldapconn, $sr).'</td>';
+	  if($count > 0){
+	    echo "Employee number ". $employeenumber. " already exists.";
+	  }
+	  else echo "OK";
+	}
+	
+     function addentry($info, $dn){
+        global $ldapconn, $ldapconfig, $userUid, $conn;
+        $userpassword = $info['userpassword'];
+	    $info["objectclass"][0] = "inetOrgPerson";
+	    $info["objectclass"][1] = "posixAccount";
+	    $info["objectclass"][2] = "top";
+	    $info["objectclass"][3] = "shadowAccount";
+
+	    $info['userpassword'] = "{MD5}".preg_replace('/=+$/','',base64_encode(pack('H*',md5($userpassword))))."==";
+        $add = ldap_add($ldapconn, $dn, $info);
+        
+		if($add){
+       	//increase uidnumberholder
+        $dnuidnumberholder = 'ou=numberholder,dc=uplb,dc=edu,dc=ph';		
+	    $newuidnumholder = array("telexnumber" => array($info['uidnumber'] + 1));
+	    $moduid = ldap_modify($ldapconn, $dnuidnumberholder, $newuidnumholder);
+        }
+	    if($add && $moduid) {
+		     // add to audit log
+			   date_default_timezone_set('Asia/Manila');
+			   $query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','insert','".$_SERVER["REMOTE_ADDR"]."','".$info['uid']."')";
+	           $insert =mysqli_query($conn, $query);
+			 
+			echo "Successfully added  <b>". $info['uid']. "</b>  to the directory. <br/>"; 
+            //SEND EMAIL
+			if($info['mail'] != NULL){
+						$subject = "UPLB NetID Account created";
+						$data = "<p>Hi ".$info['mail']."<br/><br/>".
+						            "You're UPLB NetID account has been created.". "<br/>".
+							        "Your username is <b>". $info['uid'] ."</b> and your password is <b>".$userpassword. "</b>"."<br/>". 
+									"NetID account is used by various UPLB network services, like the UPLB Wifi, for user authentication."."<br/>".
+									"Visit <\NetID web page\> and change your password right away.<br/><br/>".
+									"Sincerely,"."<br/>".
+									"UPLB NetID Account team". "<br/></p>";
+						
+						sendmail($subject ,$data, $info['mail']);	
+			}
+			else echo "Please provide an email address.<br/>";
+	    }
+		else     echo ldap_error($ldapconn ); 
+	    
+		mysqli_close($conn);
+	 }	 
+   
+     
+		 // Edit email address
+	 function editentry($info, $dn){
+	   global $ldapconn, $conn, $userUid;
+	   //$editmail = array("mail" => array($newmail));
+       $res = ldap_modify($ldapconn, $dn, $info);
+      
+	   if($res) {
+		// add to audit log
+		date_default_timezone_set('Asia/Manila');
+		$query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','edit profile','".$_SERVER["REMOTE_ADDR"]."','".$info['uid']."')";
+	    $insert =mysqli_query($conn, $query);
+		
+		echo "Edit Successful";
+	   }
+	   else      echo ldap_error($ldapconn );
+	   
+	   mysqli_close($conn);
+	}
+   
+     function searchstudent($filter){
+	   global $ldapconn;
+
+ 	   //$editmail = array("mail" => array($newmail));
+       $res = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", $filter);
+       $entries = ldap_get_entries($ldapconn, $res);
+	   if($res){  
+	    //echo "<h4>".$filter."</h4>";
+		if(!($entries["count"] > 0))
+			echo "No Results Found";
+		  else{
+		  echo  "<script type='text/javascript'>
+        $(document).ready(function () {
+           $('#pagination').smartpaginator({ 
+				totalrecords: ".$entries['count'].", 
+				recordsperpage: 20, 
+				datacontainer: 'tablelist', 
+				dataelement: 'tr', 
+				initval: 0, 
+				next: 'Next', 
+				prev: 'Prev', 
+				first: 'First', 
+				last: 'Last' ,
+	            controlsalways: true,
+				onchange: function (newPage) {
+	                $('#r').html('Page # ' + newPage);
+	                 }
+            });
+
+        });
+    </script>";
+	   echo  '<div id="pagination" class="pagination pagination-small">
+                    </div>	';
+		   echo '<table class="table" id="tablelist" style="font-size:14px;">
+										
+											<tr>
+								                 <th>Name</th>
+								                 <th>Student Number</th>
+												 <th>Type</th>
+								                 <th>Mail</th>
+								            </tr>';
+									    
+									for($i=0; $i<count($entries)-1; $i++){
+									   echo "<tr>";
+											echo 	"<td><a  style='color:#333333' href='viewprofile.php?title=student&uid=".$entries[$i]['uid'][0]."'";  
+											         if (!($_SESSION['activerole'] =='ADMIN' || $_SESSION['activerole']=='HRDO' || $_SESSION['activerole']=='OUR')) echo "onclick='return false;'";        
+													echo ">".$entries[$i]['cn'][0]."</a></td>";										  
+											echo 	"<td>".$entries[$i]['studentnumber'][0]."</td>";
+											echo 	"<td>".$entries[$i]['studenttype'][0]."</td>";
+											//check if student has mail 
+										    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
+									    echo "</tr>";
+					                }
+				echo '</table>';
+		  }
+	   }
+	   else      echo ldap_error($ldapconn);
+	  
+	} 
+	
+	
+	 function searchemployee($filter){
+	   global $ldapconn;
+ 	   //$editmail = array("mail" => array($newmail));
+       $res = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", $filter);
+       $entries = ldap_get_entries($ldapconn, $res);
+	   if($res){  
+	     // echo "<h4>".$filter."</h4>";
+		  if(!($entries["count"] > 0))
+			echo "No Results Found";
+		  else{
+		    echo  "<script type='text/javascript'>
+        $(document).ready(function () {
+           $('#pagination').smartpaginator({ 
+				totalrecords: ".$entries['count'].", 
+				recordsperpage: 20, 
+				datacontainer: 'tablelist', 
+				dataelement: 'tr', 
+				initval: 0, 
+				next: 'Next', 
+				prev: 'Prev', 
+				first: 'First', 
+				last: 'Last' ,
+	            controlsalways: true,
+				onchange: function (newPage) {
+	                $('#r').html('Page # ' + newPage);
+	                 }
+            });
+
+        });
+    </script>";
+	   echo  '<div id="pagination" class="pagination pagination-small">
+             </div>	';
+					
+		   echo '<table class="table" id="tablelist" style="font-size:14px;">
+										
+											<tr>
+								                 <th>Name</th>
+								                 <th>Employee Number</th>
+												 <th>Type</th>
+								                 <th>Mail</th>
+								            </tr>';
+									    
+									for($i=0; $i<count($entries)-1; $i++){
+									   echo "<tr>";
+											echo 	"<td><a  style='color:#333333' href='viewprofile.php?title=employee&uid=".$entries[$i]['uid'][0]."'>";  
+											         echo $entries[$i]['cn'][0]."</a></td>";														  
+											echo 	"<td>".$entries[$i]['employeenumber'][0]."</td>";
+											echo 	"<td>".$entries[$i]['employeetype'][0]."</td>";
+											//check if student has mail 
+										    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
+									    echo "</tr>";
+					                }
+				echo '</table>';
+		  }
+	   }
+	   else      echo ldap_error($ldapconn );
+	
+	}
+
+     
+	
+	 function searchuid($uid){
+	   global $ldapconn;
+	  
+ 	   //$editmail = array("mail" => array($newmail));
+       $res = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", "(uid=*".$uid."*)");
+       $entries = ldap_get_entries($ldapconn, $res);
+	   
+	    if(!($entries["count"] > 0))
+			echo "No Results Found";
+		else{
+		    echo '<select name="adduid" id="addinputuid" class="input-xlarge" required >';
+		    for($i=0; $i<count($entries)-1; $i++){
+                echo "<option value=".$entries[$i]['uid'][0].">".$entries[$i]['title'][0]." - ".$entries[$i]['cn'][0].", &nbsp;".$entries[$i]['ou'][0]."</option>"; 
+            }			
+			echo "</select>";
+			
+			echo '<select name="addrole" id="addinputrole" class="input-xlarge">
+									 <option value="OCS">OCS</option>
+									 <option value="OUR">OUR</option>
+									 <option value="HRDO">HRDO</option>
+									 <option value="ADMIN">ADMIN</option>
+								 </select>';
+		}
+	   
+	 }  
+	 
+	 function addrole($uid, $addrole){
+		   global $conn, $userUid;
+		   
+		   $query = "SELECT * FROM user_role WHERE uid='".$uid."' AND role='".$addrole."'";
+		   $check = mysqli_query($conn, $query);
+		   if(mysqli_num_rows($check) > 0 )
+				echo "User <b>".$uid."</b> already has <b>".$addrole."</b> role.";			               
+		  else{ 
+		   $query= "INSERT INTO user_role VALUES ('".$uid."','".$addrole."')";
+		   $add =mysqli_query($conn, $query);
+		   if($add){
+		    // add to audit log
+			date_default_timezone_set('Asia/Manila');
+		    $query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','add role','".$_SERVER["REMOTE_ADDR"]."','".$uid."')";
+		    $insert =mysqli_query($conn, $query);
+			echo "Role successfully added.";
+		   }
+	       else echo mysqli_errno($conn) ." : ". mysqli_error($conn);	
+		 }  
+		  
+	}
+
+    function deleterole($uid, $delrole){
+	   global $conn, $userUid;
+	   $query="DELETE FROM user_role WHERE role='".$delrole."' and uid='".$uid."'";
+	   $del =mysqli_query($conn, $query);
+	   
+	   			               
+	   if($del) { echo "Role successfully deleted.";
+		   // add to audit log
+			date_default_timezone_set('Asia/Manila');
+		    $query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','delete role','".$_SERVER["REMOTE_ADDR"]."','".$uid."')";
+		    $insert =mysqli_query($conn, $query);
+	   }
+	   else echo mysqli_errno($conn) ." : ". mysqli_error($conn);	;
+	   
+	   mysqli_close($conn);
+	}
+
+    
+
+    function adddegreeprogram($info){
+       global $userUid, $conn;
+	   
+	   date_default_timezone_set('Asia/Manila');
+		$query = "INSERT INTO degreeprograms (gidnumber, name, title) VALUES ('".$info['gidnumber']."','".$info['name']."','".$info['title']."')";
+		$insert =mysqli_query($conn, $query);
+		
+		if($insert){
+			$query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','add degree program','".$_SERVER["REMOTE_ADDR"]."','".$info['name']."')";
+		    $insert =mysqli_query($conn, $query);
+	 	    
+			echo "Successfully added  degree program <b>". $info['name']. "</b>  to the database. <br/>"; 
+		}
+		else echo mysqli_errno($conn) ." : ". mysqli_error($conn);	
+		
+		mysqli_close($conn);
+	}
+		
+	function deletedegreeprogram($info){
+       global $userUid, $conn;
+	   
+	   date_default_timezone_set('Asia/Manila');
+		$query = "DELETE FROM degreeprograms WHERE gidnumber=".$info['gidnumber']." AND name='".$info['name']."'";
+		$delete =mysqli_query($conn, $query);
+		
+		if($delete){
+			$query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','delete degree program','".$_SERVER["REMOTE_ADDR"]."','".$info['name']."')";
+		    $insert =mysqli_query($conn, $query);
+	 	    
+			echo "Successfully deleted  degree program <b>". $info['name']. "</b>  from the database. <br/>"; 
+		}
+		else echo mysqli_errno($conn) ." : ". mysqli_error($conn);	
+		
+		mysqli_close($conn);
+	}
+	
+	function viewauditlogs($dates){
+	     global $conn;
+		        if (!mysqli_connect_errno($conn)){
+							if($dates[0] == $dates[1]){
+							    $query = "SELECT * FROM auditlog WHERE timestamp >= '".$dates[0]." 00:00:00'"; 
+			                }
+							else $query = "SELECT * FROM auditlog WHERE timestamp >= '".$dates[0]."' and timestamp <= '". $dates[1]." 23:59:59'"; 
+							$result=mysqli_query($conn, $query);
+							$count = mysqli_num_rows($result);	
+							
+				echo  "<script type='text/javascript'>
+				        $(document).ready(function () {
+				           $('#pagination').smartpaginator({ 
+								totalrecords: ".$count.", 
+								recordsperpage: 20, 
+								datacontainer: 'tablelist', 
+								dataelement: 'tr', 
+								initval: 0, 
+								next: 'Next', 
+								prev: 'Prev', 
+								first: 'First', 
+								last: 'Last' ,
+					            controlsalways: true,
+								onchange: function (newPage) {
+					                $('#r').html('Page # ' + newPage);
+					                 }
+				            });
+
+				        });
+				    </script>";
+
+			    echo  '<div id="pagination" class="pagination pagination-small">
+		              </div>';
+				            
+							 
+								echo '<table class="table" id="tablelist" style="font-size:14px;">
+								        <thead>
+											   <tr>
+												<th>User ID</th>
+												<th>IP Address</th>
+												<th>Timestamp</th>
+												<th>Access Type</th>
+												<th>Affected User</th>
+												</tr>
+										</thead>';
+								echo   '<tbody id="tablebody">';		
+										while($row = mysqli_fetch_array($result))
+													  {
+													  echo "<tr>";
+													  echo "<td>" . $row['username'] . "</td>";
+													  echo "<td>" . $row['ipaddress'] . "</td>";
+													  echo "<td>" . $row['timestamp'] . "</td>";
+													  echo "<td>" . $row['accesstype'] . "</td>";
+													  echo "<td>" . $row['affecteduser'] . "</td>";
+													  echo "</tr>";
+	                                             											 
+													}
+						         echo   '</tbody>';       
+						         echo '</table>';
+								 mysqli_close($conn);
+							}
+							else 
+						       echo "Failed to connect to MySQL: " . mysqli_connect_error();
+	}
+	
+	function savelogstofile($dates){
+       global $userUid, $conn;
+	   
+	   date_default_timezone_set('Asia/Manila');
+	   $csv_output="";
+	   $query="SHOW COLUMNS FROM auditlog";
+	   $result = mysqli_query($conn, $query);
+	 	$i = 0;
+		 if (mysqli_num_rows($result) > 0) {
+			 while ($row = mysqli_fetch_assoc($result)) {  
+				 $csv_output .= $row['Field'].", ";
+				 $i++;
+			 }
+		 }
+		 $csv_output .= "\r\n";  	
+         if(gettype($dates)=='array'){ 
+ 		   if($dates[0] == $dates[1]){
+			$query = "SELECT * FROM auditlog WHERE timestamp >= '".$dates[0]." 00:00:00'"; 
+			}
+			else $query = "SELECT * FROM auditlog WHERE timestamp >= '".$dates[0]."' and timestamp <= '". $dates[1]." 23:59:59'"; 
+		 }
+		 
+		 else $query = "SELECT * FROM auditlog";
+        $values = mysqli_query($conn, $query);
+		 while ($rowr = mysqli_fetch_row($values)) {
+			 for ($j=0;$j<$i;$j++) { 
+			 $csv_output .= $rowr[$j].", ";
+		 }
+		 $csv_output .= "\r\n"; 
+		 }
+        mysqli_close($conn);
+        $filename = "NetIDLogs_".date("d-m-Y_H-i",time()).".csv";
+		$fp = fopen("files/logs/".$filename, 'w');
+        fwrite($fp, $csv_output);
+		fclose($fp); 
+		 echo "Successfully saved audit logs to file ". $filename. " <br/>"; 
+		
+		 
+	}
+	
+    // function is the variable passed by aajax, it will then be the basis of which function to execute
+    $function = $_POST['func']; 
+	
+    switch($function)
+	{
+	    case 'delete' :
+	                $dn = $_POST['dn'];
+	                $uid = $_POST['uid'];
+		            delete($dn,$uid);
+	                break;
+					
+		case 'editmail':
+					$dn = $_POST['dn'];
+					$newmail = $_POST['newmail'];
+					editmail($dn,$newmail);
+					break;
+					
+		case 'changeownpassword':
+					$dn = $_POST['dn'];
+					$mail = $_POST['mail'];
+					$pwd['userPwd'] = $_POST['userpassword'];
+					$pwd['inputPwd'] = $_POST['pwd'];
+					$pwd['newPwd'] = $_POST['newPwd'];
+					$pwd['conPwd'] = $_POST['conPwd'];
+					$pwd['md5Pwd'] = "{MD5}".preg_replace('/=+$/','',base64_encode(pack('H*',md5($_POST['pwd']))))."=="; 
+                    $pwd['md5NewPwd'] = "{MD5}".preg_replace('/=+$/','',base64_encode(pack('H*',md5($_POST['newPwd']))))."=="; 
+                    changeownpassword($dn, $pwd, $mail);
+					break;
+        
+		case 'changeotherpassword':
+					$dn = $_POST['dn'];
+					$mail = $_POST['mail'];
+					$uid = $_POST['uid']; //uid of user to change password
+					$pwd['userPwd'] = $_POST['userpassword'];
+					$pwd['newPwd'] = $_POST['newPwd'];
+					$pwd['conPwd'] = $_POST['conPwd'];
+					$pwd['md5NewPwd'] = "{MD5}".preg_replace('/=+$/','',base64_encode(pack('H*',md5($_POST['newPwd']))))."=="; 
+                    changeotherpassword($dn, $pwd, $uid, $mail);
+					break;
+					
+        case 'selectdegreeprograms':
+                    $gidnumber = $_POST['gidnumber'];
+					selectdegreeprograms($gidnumber);
+					break;		
+		
+		case 'editselectdegreeprograms':
+                    $gidnumber = $_POST['gidnumber'];
+					$ou = $_POST['ou'];
+					editselectdegreeprograms($gidnumber, $ou);
+					break;	
+      
+        case 'checkstudentnumber':
+                    $studentnumber = $_POST['studentnumber'];
+                    checkstudentnumber($studentnumber);
+                    break;					
+		
+		 case 'checkemployeenumber':
+                    $employeenumber = $_POST['employeenumber'];
+                    checkemployeenumber($employeenumber);
+                    break;	
+					
+		case 'addentry':
+					$info = $_POST['info'];
+					$dn = $_POST['dn'];
+					addentry($info, $dn);
+					break;
+					
+		case 'editentry':
+					$info = $_POST['info'];
+					$dn = $_POST['dn'];
+					editentry($info, $dn);
+					break;
+
+        case 'search':
+                    $filter = $_POST['filter'];
+                    $title = $_POST['title'];
+                    if($title=='student') searchstudent($filter);					
+                    else if ($title=='employee') searchemployee($filter);					
+					break;
+		
+		case 'deleterole':
+		            $uid =  $_POST['uid'];
+		            $delrole =  $_POST['role'];
+		            deleterole($uid,$delrole);
+					break;
+					
+		case 'searchuid':
+		            $uid =  $_POST['uid'];
+		            searchuid($uid);
+	                break;
+					
+        case 'addrole':
+		            $uid =  $_POST['uid'];
+		            $addrole =  $_POST['role'];
+		            addrole($uid, $addrole);
+                    break;
+	    
+		case 'changeactiverole':
+		            $activerole =  $_POST['activerole'];
+					if($activerole=='student') 
+						$_SESSION['title'] = 'student';
+		            $_SESSION['activerole'] = $activerole;
+					break;
+		
+			
+		
+		case 'adddegreeprogram':
+		            $info['name'] =  $_POST['name'];
+		            $info['title'] =  $_POST['title'];
+		            $info['gidnumber'] =  $_POST['gidnumber'];
+					adddegreeprogram($info);
+					break;	
+	    
+		case 'deletedegreeprogram':
+		            $info['name'] =  $_POST['name'];
+		            $info['gidnumber'] =  $_POST['gidnumber'];
+					deletedegreeprogram($info);
+					break;
+        
+		case 'viewauditlogs':
+		            $dates = $_POST['dates'];
+                    viewauditlogs($dates);
+                    break;	
+		
+		case 'savelogstofile':
+		            $dates = $_POST['dates'];
+                    savelogstofile($dates);
+                    break;					
+     
+	}
+	
+
+
+?>
