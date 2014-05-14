@@ -97,8 +97,8 @@ function changeownpassword(dn)
 
 //This function is called when the change password form is submitted ; user change other user's password
 function changeotherpassword(dn)
-{
-  var mail = document.getElementById('sendtomail').value.trim();
+
+{  var mail = document.getElementById('sendtomail').value.trim();
   var userpassword = document.getElementById('userpassword').value.trim();
   var uid = document.getElementById('username').value.trim();
   

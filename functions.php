@@ -9,7 +9,7 @@
 		 echo "Failed to connect to MySQL: " . mysqli_connect_error();
 		 
     function sendmail($subject, $data, $to){
-		$from = "itcspmanegr@uplb.edu.ph";
+		$from = "itcspmanager@uplb.edu.ph";
 		$mail = new PHPMailer;
 
 
@@ -40,19 +40,55 @@
 	}
 	
 	// Delete an entry in the directory
-    function delete($dn,$uid){
+    function delete($dn,$uid,$status,$title){
 	   global $ldapconn,$conn,$userUid;
-	   $res = ldap_delete($ldapconn, $dn);
+
+	   //determines what account type should be disabled or enabled
+	   if($title == 'student'){
+	   	if($status == 'activate') $info['activestudent'] = "TRUE";
+	   	else $info['activestudent'] = "FALSE";
+	   }
+	   else if ($title == 'employee'){
+	   	if($status == 'activate') $info['activeemployee'] = "TRUE";
+	   	else $info['activeemployee'] = "FALSE";
+	   }
+
+	   	//makes changes in the server
+	   	$res = ldap_modify($ldapconn, $dn, $info);
 	   
+	   	//searches for the entry's attributes
+	 	$sr=ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", "(&(uid=".$uid.")(title=".$title."))");
+		$entries = ldap_get_entries($ldapconn, $sr);
+
+		//variable rename is set to 1 initially, if the entry has both disabled employee and student accounts. it will be disabled
+		$rename = 1;
+
+	   	if ($entries[0]['activeemployee'][0] == 'FALSE'){
+	   		$rename = 0;
+	   		if($entries[0]['activestudent'] == 'FALSE'){
+	   			$rename = 0;
+	   		}else $rename = 1;
+	   	}else if ($entries[0]['activestudent'][0] == 'FALSE'){
+	   		$rename = 0;
+	   	}else $rename = 1;
+		
+		//moves the dn of entry to disabledAccounts if rename is set to 0
+		if($rename == 0){	
+			$newRdn = 'uniqueIdentifierUPLB='.$entries[0]['uidnumber'][0];
+			$newParent = 'ou=disabledAccounts,dc=uplb,dc=edu,dc=ph';
+			$ren = ldap_rename($ldapconn, $dn, $newRdn, $newParent, true);
+		}
+
+
 	   if($res){
 	        //insert to audit logs
 	        date_default_timezone_set('Asia/Manila');
 			$query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','delete','".$_SERVER["REMOTE_ADDR"]."','".$uid."')";
 	        $insert =mysqli_query($conn, $query);
 			   
-			echo "Entry successfully deleted."; }
+			echo "Entry successfully ".$status."d."; }
 	   else      echo ldap_error($ldapconn );
-	    
+
        mysqli_close($conn);		
 	}
 	
@@ -234,6 +270,7 @@
 	  $sr2 = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=employee)(|(uid=".$username.")(cn=".$cn.")))");
 	  $count2 = ldap_count_entries($ldapconn, $sr2).'</td>';
 
+
 	  if($count > 0) echo "Username or Student Number already exists.";
 	  else if ($count2 > 0) echo "ADD";
 	  else echo "OK";
@@ -253,10 +290,11 @@
 	  $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=employee)(|(uid=".$username.")(employeenumber=".$employeenumber.")))");
 	  $count = ldap_count_entries($ldapconn, $sr).'</td>';
 
-	  $sr2 = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=student)(uid=".$username.")(cn=".$cn."))");
+	  $sr2 = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=student)(|(uid=".$username.")(cn=".$cn.")))");
 	  $count2 = ldap_count_entries($ldapconn, $sr2).'</td>';
 
 	  if($count > 0)  echo "Username or Employee Number already exists.";
+
 	  else if ($count2 > 0)  echo "ADD";
 	  else echo "OK";
 	}
@@ -409,34 +447,37 @@
 			            controlsalways: true,
 						onchange: function (newPage) {
 			                $('#r').html('Page # ' + newPage);
-			            }
+			                 }
 		            });
+
 		        });
-		    	</script>";
-
-	   	  echo  '<div id="pagination" class="pagination pagination-small">
-                </div>';
-
-		  echo '<table class="table" id="tablelist" style="font-size:14px;">					
-					<tr>
-		                 <th>Name</th>
-		                 <th>Student Number</th>
-						 <th>Type</th>
-		                 <th>Mail</th>
-		            </tr>';	
-
-					for($i=0; $i<count($entries)-1; $i++){
-					   echo "<tr>";
-							echo 	"<td><a  style='color:#333333' href='viewprofile.php?title=student&uid=".$entries[$i]['uid'][0]."'";  
-							         if (!($_SESSION['activerole'] =='ADMIN' || $_SESSION['activerole']=='HRDO' || $_SESSION['activerole']=='OUR')) echo "onclick='return false;'";        
-									echo ">".$entries[$i]['cn'][0]."</a></td>";										  
-							echo 	"<td>".$entries[$i]['studentnumber'][0]."</td>";
-							echo 	"<td>".$entries[$i]['studenttype'][0]."</td>";
-							//check if student has mail 
-						    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
-					    echo "</tr>";
-	                }
-					echo '</table>';
+		    </script>";
+	   echo  '<div id="pagination" class="pagination pagination-small">
+                    </div>	';
+		   echo '<table class="table" id="tablelist" style="font-size:14px;">
+										
+											<tr>
+								                 <th>Name</th>
+								                 <th>Student Number</th>
+												 <th>Type</th>
+								                 <th>Mail</th>
+								                 <th>Undergrad</th>
+								            </tr>';
+									    
+									for($i=0; $i<count($entries)-1; $i++){
+									   echo "<tr>";
+											echo 	"<td><a  style='color:#333333' href='viewprofile.php?title=student&uid=".$entries[$i]['uid'][0]."'";  
+											         if (!($_SESSION['activerole'] =='ADMIN' || $_SESSION['activerole']=='HRDO' || $_SESSION['activerole']=='OUR')) echo "onclick='return false;'";        
+													echo ">".$entries[$i]['cn'][0]."</a></td>";										  
+											echo 	"<td>".$entries[$i]['studentnumber'][0]."</td>";
+											echo 	"<td>".$entries[$i]['studenttype'][0]."</td>";
+											//check if student has mail 
+										    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
+										    else echo "<td></td>";
+										    echo "<td><button class='btn btn-link btn-normal' id='confirmButton'><i class='icon-remove'></i>Disable</button></td>";
+									    echo "</tr>";
+					                }
+				echo '</table>';
 		  }
 	   }
 	   else  echo ldap_error($ldapconn);
@@ -477,25 +518,30 @@
 	   		echo  '<div id="pagination" class="pagination pagination-small">
              	  </div>	';
 					
-		    echo '<table class="table" id="tablelist" style="font-size:14px;">				
-					<tr>
-		                 <th>Name</th>
-		                 <th>Employee Number</th>
-						 <th>Type</th>
-		                 <th>Mail</th>
-		            </tr>';
+		   echo '<table class="table" id="tablelist" style="font-size:14px;">
+										
+											<tr>
+								                 <th>Name</th>
+								                 <th>Employee Number</th>
+												 <th>Type</th>
+								                 <th>Mail</th>
+								                 <th>Status</th>
+								            </tr>';
 									    
-					for($i=0; $i<count($entries)-1; $i++){
-					   echo "<tr>";
-							echo 	"<td><a  style='color:#333333' href='viewprofile.php?title=employee&uid=".$entries[$i]['uid'][0]."'>";  
-							         echo $entries[$i]['cn'][0]."</a></td>";														  
-							echo 	"<td>".$entries[$i]['employeenumber'][0]."</td>";
-							echo 	"<td>".$entries[$i]['employeetype'][0]."</td>";
-							//check if student has mail 
-						    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
-					    echo "</tr>";
-	                }
-					echo '</table>';
+									for($i=0; $i<count($entries)-1; $i++){
+									   echo "<tr>";
+											echo 	"<td><a  style='color:#333333' href='viewprofile.php?title=employee&uid=".$entries[$i]['uid'][0]."'>";  
+											         echo $entries[$i]['cn'][0]."</a></td>";														  
+											echo 	"<td>".$entries[$i]['employeenumber'][0]."</td>";
+											echo 	"<td>".$entries[$i]['employeetype'][0]."</td>";
+											//check if student has mail 
+										    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
+										    else echo "<td></td>";
+											if($entries[$i]['activeemployee'][0]=="TRUE") echo "<td>Active</td>";
+											else echo "<td>Inactive</td>";
+									    echo "</tr>";
+					                }
+				echo '</table>';
 		  }
 	   }
 	   else  echo ldap_error($ldapconn );
@@ -741,7 +787,9 @@
 	    case 'delete' :
 	                $dn = $_POST['dn'];
 	                $uid = $_POST['uid'];
-		            delete($dn,$uid);
+	                $status = $_POST['status'];
+	                $title = $_POST['title'];
+		            delete($dn,$uid,$status,$title);
 	                break;
 					
 		case 'editmail':

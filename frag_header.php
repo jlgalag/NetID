@@ -17,7 +17,7 @@
 			    <li class="nav-header">Role</li>
 				<?php
 				   // show list of roles from the session data
-				   for($i = 0; $i<count($role); $i++){
+				   for($i = 0; $i<count($role)-1; $i++){
 				?>
 				    <li><a onclick="javascript:changeactiverole('<?php echo $role[$i] ?>');"><?php echo $role[$i]?></a></li>
 				   

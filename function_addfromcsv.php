@@ -5,6 +5,11 @@
 	require 'frag_sessions.php';
 	 ini_set('max_execution_time', 300);
 	
+	$search = ldap_search($ldapconn, 'ou=numberHolder,dc=uplb,dc=edu,dc=ph', "(cn=uidLatestNumber)");
+    $entry = ldap_get_entries($ldapconn, $search);
+    $uidnumholderdn = $entry[0]['dn'];	
+    $uidnumholder = $entry[0]['serialNumber'][0];
+
 	 //User with STUDENT or EMPLOYEE as role cannot view this page
 	if(!($activerole=='OUR' || $activerole=='ADMIN' || $activerole=='HRDO'))
 	   redirect("home.php");
@@ -62,7 +67,7 @@ function generatepassword() {
 
      function checkstudentnumber($studentnumber){
 	  global $ldapconn, $ldapconfig;
-	  $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(studentnumber=".$studentnumber.")",  array("uid"));
+	  $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(studentNumber=".$studentnumber.")",  array("uid"));
 	  if(ldap_count_entries($ldapconn, $sr) > 0){
 	     $entry = ldap_get_entries($ldapconn, $sr);
 		 return $entry[0]['uid'][0]; 
@@ -72,7 +77,7 @@ function generatepassword() {
 	
 	function checkemployeenumber($employeenumber){
 	  global $ldapconn, $ldapconfig;
-	  $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(employeenumber=".$employeenumber.")",  array("uid"));
+	  $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(employeeNumber=".$employeenumber.")",  array("uid"));
 	  if(ldap_count_entries($ldapconn, $sr) > 0){
 	     $entry = ldap_get_entries($ldapconn, $sr);
 		 return $entry[0]['uid'][0]; 
@@ -80,24 +85,33 @@ function generatepassword() {
       else return NULL;	 
    }
 	
+
+	function encrypt($string){
+
+		$salt = sha1(rand());
+		$salt = substr($salt, 0, 4);
+
+		//return encrpted value
+		return $encrypted = "{SSHA}".base64_encode( sha1( $string . $salt, true) . $salt );
+	}
+
   function csvaddentry($info,$dn, $title){
         global $ldapconn, $titletoadd;
 		$activerole = $_SESSION['activerole'];
   
         
-        
-		$search = ldap_search($ldapconn, 'ou=,numberHolder,dc=uplb,dc=edu,dc=ph', "(cn=uidLatestNumber)");
-        $entry = ldap_get_entries($ldapconn, $search);
-        $uidnumhorderdn = $entry[0]['dn'];	
-        $uidnumholder = $entry[0]['telexnumber'][0];
 	
 	    $info["uidnumber"] = $uidnumholder;
-	    $info["objectclass"][0] = "inetOrgPerson";
-	    $info["objectclass"][1] = "posixAccount";
-	    $info["objectclass"][2] = "top";
-	    $info["objectclass"][3] = "shadowAccount";
-        $userpassword =  $info['userpassword'];
-	    $info['userpassword'] = "{MD5}".preg_replace('/=+$/','',base64_encode(pack('H*',md5($info['userpassword']))))."==";
+	    $info["objectclass"][0] = "UPLBEntity";
+	    if($title == "student")
+	    	$info["objectclass"][1] = "UPLBStudent";
+	    else if($title == "employee")
+	    	$info["objectclass"][1] = "UPLBEmployee";
+
+	    $info['securityquestion'] = encrypt($info['securityquestion']);
+	    $info['securityanswer'] = encrypt($info['securityanswer']);
+		$info['userpassword'] = encrypt($info['userpassword']);
+
         if($info['title'] != $titletoadd ) return false;
 		
 		if($info['title'] == 'student'){
@@ -105,7 +119,7 @@ function generatepassword() {
 		  if($checkstudnum!= NULL)
 		      {
 			      echo "<tr><td>".$info['cn']."</td>";  
-				  echo "<td colspan='4'><a href='viewprofile.php?title=".$title."&uid=".$checkstudnum."'></b>".$info['studentnumber']."</b></a> already exists.</td></tr>"; 
+				  echo "<td colspan='4'><a href='viewprofile.php?title=student&uid=".$checkstudnum."'></b>".$info['studentnumber']."</b></a> already exists.</td></tr>"; 
                   return false;													
 			  }
 		}	  
@@ -114,7 +128,7 @@ function generatepassword() {
 		  if($checkempnum!= NULL)
 		      {
 			    echo "<tr><td><b>".$info['cn']."</b></td>";  
-				  echo "<td colspan='4'><a href='viewprofile.php?title=".$title."&uid=".$checkempnum."'></b>".$info['employeenumber']."</b></a> already exists.</td></tr>"; 
+				  echo "<td colspan='4'><a href='viewprofile.php?title=employee&uid=".$checkempnum."'></b>".$info['employeenumber']."</b></a> already exists.</td></tr>"; 
                   return false;	
 			  }
 		}
@@ -122,8 +136,8 @@ function generatepassword() {
 		$add = ldap_add($ldapconn, $dn, $info);
         
        	//increase uidnumberholder
-        $dnuidnumberholder = 'ou=numberholder,dc=uplb,dc=edu,dc=ph';		
-	    $newuidnumholder = array("telexnumber" => array($uidnumholder+ 1));
+        $dnuidnumberholder = 'ou=numberHolder,dc=uplb,dc=edu,dc=ph';		
+	    $newuidnumholder = array("uidLatestNumber" => array($serialNumber+ 1));
         if($add)	   
 			$moduid = ldap_modify($ldapconn, $dnuidnumberholder, $newuidnumholder);
     
@@ -246,6 +260,7 @@ function generatepassword() {
 						            //echo $data[$c] . "<br />\n";
 						        }
 								if($titletoadd == 'student'){
+									$info['uniqueIdentifierUPLB'] = $uidnumholder;
 									$info['uid'] = $data[0];
 									$info['cn'] = $data[1];
 									$info['sn'] = $data[2];
@@ -254,16 +269,16 @@ function generatepassword() {
 									$info['studentnumber'] = $data[5];
 									$info['studenttype'] = $data[6];
 									$info['gidnumber'] = $data[7];
-									$info['ou'] = $data[8];
+									$info['course'] = $data[8];
 									$info['homedirectory'] = $data[9];
 									$info['title'] = $data[10];
-									$info['shadowmax'] = $data[11];
-									$info['shadowwarning'] = $data[12];
-									$info['loginshell'] = $data[13];
 							        $info['userpassword'] = generatepassword();
-									$dn = "uid=".$info['uid'].",ou=people,dc=uplb,dc=edu,dc=ph";
+							        $info['securityquestion'] = generatepassword();
+							        $info['securityanswer'] = generatepassword();
+ 									$dn = "uniqueIdentifierUPLB=".$uidnumholder.",ou=people,dc=uplb,dc=edu,dc=ph";
 								}
 								else{
+									$info['uniqueIdentifierUPLB'] = $uidnumholder;
 									$info['uid'] = $data[0];
 									$info['cn'] = $data[1];
 									$info['sn'] = $data[2];
@@ -275,14 +290,14 @@ function generatepassword() {
 									$info['ou'] = $data[8];
 									$info['homedirectory'] = $data[9];
 									$info['title'] = $data[10];
-									$info['shadowmax'] = $data[11];
-									$info['shadowwarning'] = $data[12];
-									$info['loginshell'] = $data[13];
 							        $info['userpassword'] = generatepassword();
-									$dn = "uid=".$info['uid'].",ou=people,dc=uplb,dc=edu,dc=ph";
+									$dn = "uniqueIdentifierUPLB=".$uidnumholder.",ou=people,dc=uplb,dc=edu,dc=ph";
 								}
 							    $add = csvaddentry($info,$dn,$titletoadd);
-								if($add) $count++;							
+								if($add){
+									$count++;							
+									//$uidnumholder++;
+								}
 						}
 					    fclose($handle);
 						

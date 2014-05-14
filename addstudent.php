@@ -9,7 +9,7 @@
     // search for the current value of uidnumholder, this will be the the uidnumber of the entry to be added	
 	$search = ldap_search($ldapconn, "ou=numberholder,".$ldapconfig['basedn'], "cn=uidlatestnumber");
     $entry = ldap_get_entries($ldapconn, $search);
-    $uidnumhorderdn = $entry[0]['dn'];	
+    $uidnumholderdn = $entry[0]['dn'];	
     $uidnumholder = $entry[0]['serialnumber'][0] +1;
 	
 ?> 
