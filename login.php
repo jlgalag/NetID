@@ -56,7 +56,8 @@
 			}
 		    // dump roles from directory too array
 		    $j=2;
-			for($i=$i; $i<$count+$temp; $i++){
+		    $cnt = $count+$temp-2;
+			for($i=$i; $i<$cnt; $i++){
 				$userRole[$i] = $title[$j];
 				$j++;
 			}
