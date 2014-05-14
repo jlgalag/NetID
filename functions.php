@@ -73,7 +73,14 @@
 	   mysqli_close($conn);
 	}
 	
-	// Edit password -own
+	/**
+	*	Function to be used when user changes his own password
+	*
+	*	@param String - $dn 	distinguished name of an LDAP entity
+	* 		   Array - $pwd 	current password , new password, confirmation password
+	*		   String - $mail 	email address of the user
+	*
+	*/
 	 function changeownpassword($dn, $pwd, $mail){
 		global $ldapconn,$conn,$userUid;
 	 
@@ -120,7 +127,14 @@
 		  mysqli_close($conn);
     }
     
-	// Edit password - other
+	/**
+	*	Function to be used when user changes other account's password
+	*
+	*	@param String - $dn 	distinguished name of an LDAP entity
+	* 		   Array - $pwd 	current password , new password, confirmation password
+	*		   String - $mail 	email address of the affected user
+	*
+	*/
 	 function changeotherpassword($dn, $pwd, $uid, $mail){
 		global $ldapconn,$conn,$userUid;
 	  
@@ -295,9 +309,10 @@
 		    $newuidnumholder = array("serialnumber" => array($info['uidnumber']));
 		    $moduid = ldap_modify($ldapconn, $dnuidnumberholder, $newuidnumholder);
         }
-        else{echo ldap_error($ldapconn ); echo $info["objectclass"][1];}
+        else 	echo ldap_error($ldapconn );
+
 	    if($add && $moduid) {
-		     // add to audit log
+		       // add to audit log
 			   date_default_timezone_set('Asia/Manila');
 			   $query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','insert','".$_SERVER["REMOTE_ADDR"]."','".$info['uid']."')";
 	           $insert =mysqli_query($conn, $query);
@@ -318,14 +333,14 @@
 			}
 			else echo "Please provide an email address.<br/>";
 	    }
-		else     echo ldap_error($ldapconn ); 
+		else  echo ldap_error($ldapconn); 
 	    
 		mysqli_close($conn);
 	 }	 
    
    	 /**
    	 *	Adds student attributes on existing account
-   	 *	Records the changes made in auditlog
+   	 *	Records the changes made to auditlog
    	 *
    	 * 	@param Array - $info 		attributes to be added
    	 *		   String - $dn 		distinguished name of an LDAP entity
@@ -368,6 +383,7 @@
 	   mysqli_close($conn);
 	}
    
+
      function searchstudent($filter){
 	   global $ldapconn;
  	   //$editmail = array("mail" => array($newmail));
@@ -379,51 +395,51 @@
 			echo "No Results Found";
 		  else{
 		  echo  "<script type='text/javascript'>
-        $(document).ready(function () {
-           $('#pagination').smartpaginator({ 
-				totalrecords: ".$entries['count'].", 
-				recordsperpage: 20, 
-				datacontainer: 'tablelist', 
-				dataelement: 'tr', 
-				initval: 0, 
-				next: 'Next', 
-				prev: 'Prev', 
-				first: 'First', 
-				last: 'Last' ,
-	            controlsalways: true,
-				onchange: function (newPage) {
-	                $('#r').html('Page # ' + newPage);
-	                 }
-            });
+		        $(document).ready(function () {
+		           $('#pagination').smartpaginator({ 
+						totalrecords: ".$entries['count'].", 
+						recordsperpage: 20, 
+						datacontainer: 'tablelist', 
+						dataelement: 'tr', 
+						initval: 0, 
+						next: 'Next', 
+						prev: 'Prev', 
+						first: 'First', 
+						last: 'Last' ,
+			            controlsalways: true,
+						onchange: function (newPage) {
+			                $('#r').html('Page # ' + newPage);
+			            }
+		            });
+		        });
+		    	</script>";
 
-        });
-    </script>";
-	   echo  '<div id="pagination" class="pagination pagination-small">
-                    </div>	';
-		   echo '<table class="table" id="tablelist" style="font-size:14px;">
-										
-											<tr>
-								                 <th>Name</th>
-								                 <th>Student Number</th>
-												 <th>Type</th>
-								                 <th>Mail</th>
-								            </tr>';
-									    
-									for($i=0; $i<count($entries)-1; $i++){
-									   echo "<tr>";
-											echo 	"<td><a  style='color:#333333' href='viewprofile.php?title=student&uid=".$entries[$i]['uid'][0]."'";  
-											         if (!($_SESSION['activerole'] =='ADMIN' || $_SESSION['activerole']=='HRDO' || $_SESSION['activerole']=='OUR')) echo "onclick='return false;'";        
-													echo ">".$entries[$i]['cn'][0]."</a></td>";										  
-											echo 	"<td>".$entries[$i]['studentnumber'][0]."</td>";
-											echo 	"<td>".$entries[$i]['studenttype'][0]."</td>";
-											//check if student has mail 
-										    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
-									    echo "</tr>";
-					                }
-				echo '</table>';
+	   	  echo  '<div id="pagination" class="pagination pagination-small">
+                </div>';
+
+		  echo '<table class="table" id="tablelist" style="font-size:14px;">					
+					<tr>
+		                 <th>Name</th>
+		                 <th>Student Number</th>
+						 <th>Type</th>
+		                 <th>Mail</th>
+		            </tr>';	
+
+					for($i=0; $i<count($entries)-1; $i++){
+					   echo "<tr>";
+							echo 	"<td><a  style='color:#333333' href='viewprofile.php?title=student&uid=".$entries[$i]['uid'][0]."'";  
+							         if (!($_SESSION['activerole'] =='ADMIN' || $_SESSION['activerole']=='HRDO' || $_SESSION['activerole']=='OUR')) echo "onclick='return false;'";        
+									echo ">".$entries[$i]['cn'][0]."</a></td>";										  
+							echo 	"<td>".$entries[$i]['studentnumber'][0]."</td>";
+							echo 	"<td>".$entries[$i]['studenttype'][0]."</td>";
+							//check if student has mail 
+						    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
+					    echo "</tr>";
+	                }
+					echo '</table>';
 		  }
 	   }
-	   else      echo ldap_error($ldapconn);
+	   else  echo ldap_error($ldapconn);
 	  
 	} 
 	
@@ -439,51 +455,50 @@
 			echo "No Results Found";
 		  else{
 		    echo  "<script type='text/javascript'>
-        $(document).ready(function () {
-           $('#pagination').smartpaginator({ 
-				totalrecords: ".$entries['count'].", 
-				recordsperpage: 20, 
-				datacontainer: 'tablelist', 
-				dataelement: 'tr', 
-				initval: 0, 
-				next: 'Next', 
-				prev: 'Prev', 
-				first: 'First', 
-				last: 'Last' ,
-	            controlsalways: true,
-				onchange: function (newPage) {
-	                $('#r').html('Page # ' + newPage);
-	                 }
-            });
+			        $(document).ready(function () {
+			           $('#pagination').smartpaginator({ 
+							totalrecords: ".$entries['count'].", 
+							recordsperpage: 20, 
+							datacontainer: 'tablelist', 
+							dataelement: 'tr', 
+							initval: 0, 
+							next: 'Next', 
+							prev: 'Prev', 
+							first: 'First', 
+							last: 'Last' ,
+				            controlsalways: true,
+							onchange: function (newPage) {
+				                $('#r').html('Page # ' + newPage);
+				                 }
+			            });
+			        });
+			      </script>";
 
-        });
-    </script>";
-	   echo  '<div id="pagination" class="pagination pagination-small">
-             </div>	';
+	   		echo  '<div id="pagination" class="pagination pagination-small">
+             	  </div>	';
 					
-		   echo '<table class="table" id="tablelist" style="font-size:14px;">
-										
-											<tr>
-								                 <th>Name</th>
-								                 <th>Employee Number</th>
-												 <th>Type</th>
-								                 <th>Mail</th>
-								            </tr>';
+		    echo '<table class="table" id="tablelist" style="font-size:14px;">				
+					<tr>
+		                 <th>Name</th>
+		                 <th>Employee Number</th>
+						 <th>Type</th>
+		                 <th>Mail</th>
+		            </tr>';
 									    
-									for($i=0; $i<count($entries)-1; $i++){
-									   echo "<tr>";
-											echo 	"<td><a  style='color:#333333' href='viewprofile.php?title=employee&uid=".$entries[$i]['uid'][0]."'>";  
-											         echo $entries[$i]['cn'][0]."</a></td>";														  
-											echo 	"<td>".$entries[$i]['employeenumber'][0]."</td>";
-											echo 	"<td>".$entries[$i]['employeetype'][0]."</td>";
-											//check if student has mail 
-										    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
-									    echo "</tr>";
-					                }
-				echo '</table>';
+					for($i=0; $i<count($entries)-1; $i++){
+					   echo "<tr>";
+							echo 	"<td><a  style='color:#333333' href='viewprofile.php?title=employee&uid=".$entries[$i]['uid'][0]."'>";  
+							         echo $entries[$i]['cn'][0]."</a></td>";														  
+							echo 	"<td>".$entries[$i]['employeenumber'][0]."</td>";
+							echo 	"<td>".$entries[$i]['employeetype'][0]."</td>";
+							//check if student has mail 
+						    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
+					    echo "</tr>";
+	                }
+					echo '</table>';
 		  }
 	   }
-	   else      echo ldap_error($ldapconn );
+	   else  echo ldap_error($ldapconn );
 	
 	}
 
@@ -505,11 +520,11 @@
 			echo "</select>";
 			
 			echo '<select name="addrole" id="addinputrole" class="input-xlarge">
-									 <option value="OCS">OCS</option>
-									 <option value="OUR">OUR</option>
-									 <option value="HRDO">HRDO</option>
-									 <option value="ADMIN">ADMIN</option>
-								 </select>';
+					 <option value="OCS">OCS</option>
+					 <option value="OUR">OUR</option>
+					 <option value="HRDO">HRDO</option>
+					 <option value="ADMIN">ADMIN</option>
+				 </select>';
 		}
 	   
 	 }  
@@ -519,20 +534,24 @@
 		   
 		   $query = "SELECT * FROM user_role WHERE uid='".$uid."' AND role='".$addrole."'";
 		   $check = mysqli_query($conn, $query);
+
 		   if(mysqli_num_rows($check) > 0 )
-				echo "User <b>".$uid."</b> already has <b>".$addrole."</b> role.";			               
-		  else{ 
-		   $query= "INSERT INTO user_role VALUES ('".$uid."','".$addrole."')";
-		   $add =mysqli_query($conn, $query);
-		   if($add){
-		    // add to audit log
-			date_default_timezone_set('Asia/Manila');
-		    $query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','add role','".$_SERVER["REMOTE_ADDR"]."','".$uid."')";
-		    $insert =mysqli_query($conn, $query);
-			echo "Role successfully added.";
-		   }
-	       else echo mysqli_errno($conn) ." : ". mysqli_error($conn);	
-		 }  
+				echo "User <b>".$uid."</b> already has <b>".$addrole."</b> role.";	
+
+		   else{ 
+			   $query= "INSERT INTO user_role VALUES ('".$uid."','".$addrole."')";
+			   $add =mysqli_query($conn, $query);
+
+			   if($add){
+				    // add to audit log
+					date_default_timezone_set('Asia/Manila');
+				    $query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','add role','".$_SERVER["REMOTE_ADDR"]."','".$uid."')";
+				    $insert =mysqli_query($conn, $query);
+					echo "Role successfully added.";
+			   }
+
+		       else echo mysqli_errno($conn) ." : ". mysqli_error($conn);	
+		   }  
 		  
 	}
 
@@ -552,8 +571,6 @@
 	   
 	   mysqli_close($conn);
 	}
-
-    
 
     function adddegreeprogram($info){
        global $userUid, $conn;
@@ -601,59 +618,58 @@
 							$result=mysqli_query($conn, $query);
 							$count = mysqli_num_rows($result);	
 							
-				echo  "<script type='text/javascript'>
-				        $(document).ready(function () {
-				           $('#pagination').smartpaginator({ 
-								totalrecords: ".$count.", 
-								recordsperpage: 20, 
-								datacontainer: 'tablelist', 
-								dataelement: 'tr', 
-								initval: 0, 
-								next: 'Next', 
-								prev: 'Prev', 
-								first: 'First', 
-								last: 'Last' ,
-					            controlsalways: true,
-								onchange: function (newPage) {
-					                $('#r').html('Page # ' + newPage);
-					                 }
-				            });
+					echo  "<script type='text/javascript'>
+					        $(document).ready(function () {
+					           $('#pagination').smartpaginator({ 
+									totalrecords: ".$count.", 
+									recordsperpage: 20, 
+									datacontainer: 'tablelist', 
+									dataelement: 'tr', 
+									initval: 0, 
+									next: 'Next', 
+									prev: 'Prev', 
+									first: 'First', 
+									last: 'Last' ,
+						            controlsalways: true,
+									onchange: function (newPage) {
+						                $('#r').html('Page # ' + newPage);
+						                 }
+					            });
 
-				        });
-				    </script>";
+					        });
+					    	</script>";
 
-			    echo  '<div id="pagination" class="pagination pagination-small">
-		              </div>';
-				            
-							 
-								echo '<table class="table" id="tablelist" style="font-size:14px;">
-								        <thead>
-											   <tr>
-												<th>User ID</th>
-												<th>IP Address</th>
-												<th>Timestamp</th>
-												<th>Access Type</th>
-												<th>Affected User</th>
-												</tr>
-										</thead>';
-								echo   '<tbody id="tablebody">';		
-										while($row = mysqli_fetch_array($result))
-													  {
-													  echo "<tr>";
-													  echo "<td>" . $row['username'] . "</td>";
-													  echo "<td>" . $row['ipaddress'] . "</td>";
-													  echo "<td>" . $row['timestamp'] . "</td>";
-													  echo "<td>" . $row['accesstype'] . "</td>";
-													  echo "<td>" . $row['affecteduser'] . "</td>";
-													  echo "</tr>";
-	                                             											 
-													}
-						         echo   '</tbody>';       
-						         echo '</table>';
-								 mysqli_close($conn);
-							}
-							else 
-						       echo "Failed to connect to MySQL: " . mysqli_connect_error();
+				    echo  '<div id="pagination" class="pagination pagination-small">
+			              </div>';
+					             
+							echo '<table class="table" id="tablelist" style="font-size:14px;">
+						        <thead>
+								   <tr>
+									<th>User ID</th>
+									<th>IP Address</th>
+									<th>Timestamp</th>
+									<th>Access Type</th>
+									<th>Affected User</th>
+									</tr>
+								</thead>';
+							echo   '<tbody id="tablebody">';	
+
+								while($row = mysqli_fetch_array($result))
+								{
+								  echo "<tr>";
+								  echo "<td>" . $row['username'] . "</td>";
+								  echo "<td>" . $row['ipaddress'] . "</td>";
+								  echo "<td>" . $row['timestamp'] . "</td>";
+								  echo "<td>" . $row['accesstype'] . "</td>";
+								  echo "<td>" . $row['affecteduser'] . "</td>";
+								  echo "</tr>";									 
+								}
+
+					         echo   '</tbody>';       
+					         echo '</table>';
+							 mysqli_close($conn);
+				}
+				else  echo "Failed to connect to MySQL: " . mysqli_connect_error();
 	}
 	
 	function savelogstofile($dates){
@@ -712,7 +728,7 @@
 
 	}
 	
-    // function is the variable passed by aajax, it will then be the basis of which function to execute
+    // function is the variable passed by ajax, it will then be the basis of which function to execute
     $function = $_POST['func']; 
 	
     switch($function)

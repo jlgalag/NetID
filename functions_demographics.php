@@ -30,8 +30,7 @@
 					while($row2 = mysqli_fetch_array($degreeprograms)){
 						echo '<tr>';
 						echo '<th>'.$row2['name'].'</th>';
-						$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(ou=".$row2['name'].")(gidnumber=".$row2['gidnumber']."))");
-
+						$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(course=".$row2['name'].")(title=student))");
 						echo '<td>'.ldap_count_entries($ldapconn, $sr).'</td>';
 						echo '</tr>';
 					}
@@ -76,7 +75,7 @@
 					while($row2 = mysqli_fetch_array($college)){
 						echo '<tr>';
 						echo '<th>'.$row2['name'].'</th>';
-						$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(gidnumber=".$row2['gidnumber'].")");
+						$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(college=".$row2['name'].")(title=student))");
 						echo '<td>'.ldap_count_entries($ldapconn, $sr).'</td>';
 						echo '</tr>';
 					}
@@ -106,7 +105,7 @@
 		}
 		else{
 			ob_start();	 
-		  $conn = mysqli_connect('localhost','root','','netid');			
+		    $conn = mysqli_connect('localhost','root','','netid');			
 		   // Check connection
 			if (!mysqli_connect_errno($conn)){
 				 echo "<table id='datatable2' style='display:none'>";
@@ -120,7 +119,7 @@
 				while($row2 = mysqli_fetch_array($college)){
 					echo '<tr>';
 					echo '<th>'.$row2['name'].'</th>';
-					$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(gidnumber=".$row2['gidnumber'].")(title=employee))");
+					$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(o=".$row2['name'].")(title=employee))");
 					echo '<td>'.ldap_count_entries($ldapconn, $sr).'</td>';
 					echo '</tr>';
 				}
@@ -129,7 +128,7 @@
 				while($row2 = mysqli_fetch_array($office)){
 					echo '<tr>';
 					echo '<th>'.$row2['name'].'</th>';
-					$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(gidnumber=".$row2['gidnumber'].")(title=employee))");
+					$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(o=".$row2['name'].")(title=employee))");
 					echo '<td>'.ldap_count_entries($ldapconn, $sr).'</td>';
 					echo '</tr>';
 				}
@@ -176,7 +175,7 @@
 					while($row2 = mysqli_fetch_array($college)){
 						echo '<tr>';
 						echo '<th>'.$row2['name'].'</th>';
-						$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(gidnumber=".$row2['gidnumber'].")(title=employee))");
+						$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(o=".$row2['name'].")(title=employee))");
 						echo '<td>'.ldap_count_entries($ldapconn, $sr).'</td>';
 						echo '</tr>';
 					}
@@ -224,7 +223,7 @@
 					while($row2 = mysqli_fetch_array($office)){
 						echo '<tr>';
 						echo '<th>'.$row2['name'].'</th>';
-						$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(gidnumber=".$row2['gidnumber'].")(title=employee))");
+						$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(o=".$row2['name'].")(title=employee))");
 						echo '<td>'.ldap_count_entries($ldapconn, $sr).'</td>';
 						echo '</tr>';
 					}
@@ -243,7 +242,7 @@
 		}	
    }
    
-    // function is the variable passed by aajax, it will then be the basis of which function to execute
+    // function is the variable passed by ajax, it will then be the basis of which function to execute
     $function = $_POST['func']; 
    
    switch($function)

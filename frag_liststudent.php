@@ -14,7 +14,6 @@
 							 ldap_sort($ldapconn, $result, $orderby);
 					         $entries = ldap_get_entries($ldapconn, $result);
 	 $count = $entries["count"];		        
-	echo $count;
 ?>
 
 
