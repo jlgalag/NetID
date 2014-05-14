@@ -380,16 +380,7 @@ function addstudent(){
 		       "activestudent" :  	   document.getElementById('inputActive').value.trim()	
 			  	};
 	        
-			
-			//show confirmation dialog box for adding of students
-			msg = "<table class='table table-condensed'>"
-			for (var key in info) {   
-			   msg1 = "<tr><td><b>" + key + "</b> </td><td>" + info[key] + "</td></tr>";
-			   msg += msg1;
-			   }
-			
-			msg += "</table>";
-			
+
 			 $.ajax({
 			    type: "POST",
 				url: 'functions.php',
@@ -400,6 +391,14 @@ function addstudent(){
 				 	func: 'checkstudentnumber' },
 			    success: function(data){
 					if($.trim(data)=="OK"){
+
+						msg = "<table class='table table-condensed'>"
+						for (var key in info) {   
+						   msg1 = "<tr><td><b>" + key + "</b> </td><td>" + info[key] + "</td></tr>";
+						   msg += msg1;
+						   }
+						msg += "</table>";
+
 						confirmmsg = "<h4 style='text-align:center;'>Confirm Addition of Student</h4>" + msg;
 				           bootbox.confirm(confirmmsg,
 						     function(result) {
@@ -425,6 +424,7 @@ function addstudent(){
 					}
 					else if($.trim(data)=="ADD"){
 						var uniqueidentifieruplb = '';
+						var msg="", msg1="", confirmmsg="";
 
 						info1= {
 						   "objectclass"	: 'UPLBStudent',
@@ -434,6 +434,14 @@ function addstudent(){
 					       "college" : 			el.options[el.selectedIndex].text,
 					       "activestudent" :  	   document.getElementById('inputActive').value.trim()	
 					  	};
+
+					  	msg = "<table class='table table-condensed'>"
+						for (var key in info1) {   
+						   msg1 = "<tr><td><b>" + key + "</b> </td><td>" + info1[key] + "</td></tr>";
+						   msg += msg1;
+						   }
+						
+						msg += "</table>";
 
 						 $.ajax({
 							    type: "POST",
@@ -446,7 +454,7 @@ function addstudent(){
 							    success: function(data){
 									var uniqueidentifieruplb = $.trim(data);
 
-									confirmmsg = "<h4 style='text-align:center;'>Confirm Addition of Student</h4>" + msg;
+									confirmmsg = "<h4 style='text-align:center;'>Entity has an existing account<br/>Confirm Addition of Student Attributes</h4>" + msg;
 						            bootbox.confirm(confirmmsg,
 								      function(result) {
 									   var dn = "<?php echo $dn?>";
@@ -527,16 +535,6 @@ function addemployee(){
 		       "loginshell" :  	 document.getElementById('hiddenLoginshell').value.trim(),
 		       "activeemployee" : document.getElementById('inputActive').value.trim()
 			  	};
-	        
-			
-			//show confirmation dialog box for adding of students
-			msg = "<table class='table table-condensed'>"
-			for (var key in info) {   
-			   msg1 = "<tr><td><b>" + key + "</b> </td><td>" + info[key] + "</td></tr>";
-			   msg += msg1;
-			   }
-			
-			msg += "</table>";
 
 			 $.ajax({
 			    type: "POST",
@@ -548,6 +546,15 @@ function addemployee(){
 				 	func: 'checkemployeenumber' },
 			    success: function(data){
 					if($.trim(data)=="OK"){
+
+						msg = "<table class='table table-condensed'>"
+						for (var key in info) {   
+						   msg1 = "<tr><td><b>" + key + "</b> </td><td>" + info[key] + "</td></tr>";
+						   msg += msg1;
+						   }
+						
+						msg += "</table>";
+
 						confirmmsg = "<h4 style='text-align:center;'>Confirm Addition of Employee</h4>" + msg;
 				           bootbox.confirm(confirmmsg,
 						     function(result) {
@@ -583,6 +590,14 @@ function addemployee(){
 					       "activeemployee" : document.getElementById('inputActive').value.trim()
 					  	};
 
+					  	msg = "<table class='table table-condensed'>"
+						for (var key in info1) {   
+						   msg1 = "<tr><td><b>" + key + "</b> </td><td>" + info1[key] + "</td></tr>";
+						   msg += msg1;
+						   }
+						
+						msg += "</table>";
+
 						 $.ajax({
 							    type: "POST",
 								url: 'functions.php',
@@ -594,7 +609,7 @@ function addemployee(){
 							    success: function(data){
 									var uniqueidentifieruplb = $.trim(data);
 
-									confirmmsg = "<h4 style='text-align:center;'>Confirm Addition of Employee</h4>" + msg;
+									confirmmsg = "<h4 style='text-align:center;'>Entity has an existing account<br/>Confirm Addition of Employee Attributes</h4>" + msg;
 						            bootbox.confirm(confirmmsg,
 								      function(result) {
 									   var dn = "<?php echo $dn?>";

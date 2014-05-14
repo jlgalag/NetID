@@ -202,6 +202,15 @@
 		mysqli_close($conn);
     }
 
+    /**
+    *	Checks the student account already exist
+    *
+    *	@param String - $username 				Username 
+    * 		   String - $studentnumber 			Student Number	
+    * 		   String - $cn 					Complete name of UPLBEntity
+	*											format (Surname, First Name, Middle Initial.)
+	*
+    */
 	function checkstudentnumber($username,$studentnumber,$cn){
 	  global $ldapconn, $ldapconfig;
 
@@ -211,11 +220,18 @@
 	  $sr2 = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=employee)(|(uid=".$username.")(cn=".$cn.")))");
 	  $count2 = ldap_count_entries($ldapconn, $sr2).'</td>';
 
-	  if($count > 0) echo "Student number already exists.";
+	  if($count > 0) echo "Username or Student Number already exists.";
 	  else if ($count2 > 0) echo "ADD";
 	  else echo "OK";
 	}
 	
+	/**
+    *	Checks the employee account already exist
+    *
+    *	@param String - $username 				Username 
+    * 		   String - $employeenumber 		Employee Number	
+    * 		   String - $cn 					Complete name of the entity
+    */
 	function checkemployeenumber($username, $employeenumber,$cn){
 	  global $ldapconn, $ldapconfig;
 	  
@@ -226,13 +242,15 @@
 	  $sr2 = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=student)(uid=".$username.")(cn=".$cn."))");
 	  $count2 = ldap_count_entries($ldapconn, $sr2).'</td>';
 
-	  if($count > 0)  echo "Employee number already exists.";
+	  if($count > 0)  echo "Username or Employee Number already exists.";
 	  else if ($count2 > 0)  echo "ADD";
 	  else echo "OK";
 	}
 	
 	/**
-	*	@param String 	- String to be encrypted
+	*	Encrypts a string into salted sha1 (SSHA)
+	*
+	* 	@param String - $string 	 String to be encrypted (password)
 	*
 	*/
 	function encrypt($string){
@@ -244,7 +262,13 @@
 		return $encrypted = "{SSHA}".base64_encode( sha1( $string . $salt, true) . $salt );
 	}
 
-
+	/**
+	*	Add an account in the server
+	*
+	* 	@param Array - $info 	 attributes to be added
+	* 		   String - $dn 	 distinguished name of an LDAP entity
+	*
+	*/
      function addentry($info, $dn){
         global $ldapconn, $ldapconfig, $userUid, $conn;
         $userpassword = $info['userpassword'];
@@ -300,16 +324,23 @@
 	 }	 
    
    	 /**
-   	 * @param Array - $info 	attributes to be added
-   	 *		  String - $dn 		distinguished name of an LDAP entity
+   	 *	Adds student attributes on existing account
+   	 *	Records the changes made in auditlog
+   	 *
+   	 * 	@param Array - $info 		attributes to be added
+   	 *		   String - $dn 		distinguished name of an LDAP entity
    	 */
      function addattr($info, $dn, $uid){
      	global $ldapconn, $ldapconfig, $userUid, $conn;
+        
+     	$info1["title"][0] = 'employee';
+     	$info1["title"][1] = 'student';
 
      	$add = ldap_mod_add($ldapconn, $dn, $info);
-        
+
 		if(!$add) echo ldap_error($ldapconn);
        	else {
+       		$add = ldap_modify($ldapconn, $dn, $info1);
        		date_default_timezone_set('Asia/Manila');
 			$query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','insert','".$_SERVER["REMOTE_ADDR"]."','".$uid."')";
 	        $insert =mysqli_query($conn, $query);
@@ -456,7 +487,6 @@
 	
 	}
 
-     
 	
 	 function searchuid($uid){
 	   global $ldapconn;
@@ -661,12 +691,13 @@
 		$fp = fopen("files/logs/".$filename, 'w');
         fwrite($fp, $csv_output);
 		fclose($fp); 
-		 echo "Successfully saved audit logs to file ". $filename. " <br/>"; 
-		
-		 
+		echo "Successfully saved audit logs to file ". $filename. " <br/>"; 
+			 
 	}
 
 	/**
+	*	Searches the uniqueIdentifierUPLB of an entity given his cn
+	*
 	*	@param String - $cn 	complete name of UPLBEntity
 	*							format (Surname, First Name, Middle Initial.)
 	*		   
@@ -690,6 +721,7 @@
 	    			$cn = $_POST['cn'];
 	    			searchUniqueUPLBIdentifier($cn);
 	    			break;
+
 	    case 'delete' :
 	                $dn = $_POST['dn'];
 	                $uid = $_POST['uid'];
