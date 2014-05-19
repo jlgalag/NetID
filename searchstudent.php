@@ -22,6 +22,7 @@
 		$_SESSION['group'] = $group;
 	}
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -234,3 +235,73 @@
 
 </body>
 </html>
+
+
+<script>
+
+function enableStudentAccount(data){
+	var stat = $("#"+data).children("#enable_account").children("#enableButton").text();
+	var status = $("#"+data).children("#enable_account").attr('value');
+	var title = 'student';
+	var uid = $("#"+data).children("#uid").attr('value');
+	var identifier = $("#"+data).children("#identifier").attr('value');
+	var dn = "uniqueIdentifierUPLB="+identifier+",ou=people,dc=uplb,dc=edu,dc=ph";
+
+	if(stat=='Deactivate') status = 'TRUE';
+		else status = 'FALSE';
+
+
+		alert(status);
+	$.ajax({
+		type: "POST",
+		url: 'functions.php',
+	    data: 
+		{   
+		    dn : dn,
+		    uid : uid,
+		    status : status,
+		    title : title,
+		 	func: 'delete'
+		},
+	    success: function(data1){
+	    	bootbox.alert('Success!');
+	    	if(status=='TRUE') $("#"+data).children("#enable_account").children("#enableButton").text('Activate');
+	    	else $("#"+data).children("#enable_account").children("#enableButton").text('Deactivate');
+	    }
+	});
+
+}
+
+function addAlumniAttributes(data){
+	var coursegraduated = $("#"+data).children("#course").attr('value');
+	var uid = $("#"+data).children("#uid").attr('value');
+	var yeargraduated = <?php echo date("Y"); ?>;
+	var identifier = $("#"+data).children("#identifier").attr('value');
+	var dn = "uniqueIdentifierUPLB="+identifier+",ou=people,dc=uplb,dc=edu,dc=ph";
+
+	var info = {
+		"objectclass" : 'UPLBAlumni',
+		"coursegraduated" : coursegraduated,
+		"yeargraduated" : yeargraduated,
+		"title" : 'alumni'
+	};
+
+	alert(data);
+
+	$.ajax({
+		 type: "POST",
+			url: 'functions.php',
+		    data: 
+			{   
+			    dn : dn,
+			    info : info,
+			    uid : uid,
+			 	func: 'addalumniattributes'
+			},
+		    success: function(data1){
+		    	bootbox.alert('Successfully added!');
+		    }
+	});
+}
+
+</script>

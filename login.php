@@ -57,14 +57,14 @@
 				}
 			    // dump roles from directory to array
 			    $j=1;
-				for($i=$i; $i<$count+$temp; $i++){
+				for($i=$i; $i<$count+$temp-1; $i++){
 					$userRole[$i] = $title[$j];
 					$j++;
 				}
 				mysqli_close($conn);
 				//set session data
 				$_SESSION['userUid'] = $userUid;	
-				$_SESSION['title'] = $title[$j];		  
+				$_SESSION['title'] = $title[$j-3];		  
 				$_SESSION['role'] = 	$userRole;
 				$_SESSION['activerole'] = 	$userRole[0];
 				$today = date("Y-m-d H:i:s");     

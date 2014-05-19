@@ -238,3 +238,37 @@
 
 </body>
 </html>
+
+<script>
+
+	function enableEmployeeAccount(data){
+		var stat = $("#"+data).children("#enable_account").children("#enableButton").text();
+		var title = 'employee';
+		var uid = $("#"+data).children("#uid").attr('value');
+		var identifier = $("#"+data).children("#identifier").attr('value');
+		var dn = "uniqueIdentifierUPLB="+identifier+",ou=people,dc=uplb,dc=edu,dc=ph";
+		var status = $("#"+data).children("#enable_account").attr('value');
+
+		if(stat=='Deactivate') status = 'TRUE';
+		else status = 'FALSE';
+
+		$.ajax({
+			 type: "POST",
+				url: 'functions.php',
+			    data: 
+				{   
+				    dn : dn,
+				    uid : uid,
+				    status : status,
+				    title : title,
+				 	func: 'delete'
+				},
+			    success: function(data1){
+			    	bootbox.alert('Success!');
+			    	if(status=='TRUE') $("#"+data).children("#enable_account").children("#enableButton").text('Activate');
+	    			else $("#"+data).children("#enable_account").children("#enableButton").text('Deactivate');
+			    }
+		});
+	}
+
+</script>

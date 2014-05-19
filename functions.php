@@ -377,7 +377,7 @@
 	 }	 
    
    	 /**
-   	 *	Adds student attributes on existing account
+   	 *	Adds attributes on an existing account
    	 *	Records the changes made to auditlog
    	 *
    	 * 	@param Array - $info 		attributes to be added
@@ -386,18 +386,47 @@
      function addattr($info, $dn, $uid){
      	global $ldapconn, $ldapconfig, $userUid, $conn;
         
-     	$info1["title"][0] = 'employee';
-     	$info1["title"][1] = 'student';
-
      	$add = ldap_mod_add($ldapconn, $dn, $info);
 
 		if(!$add) echo ldap_error($ldapconn);
        	else {
-       		$add = ldap_modify($ldapconn, $dn, $info1);
        		date_default_timezone_set('Asia/Manila');
 			$query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','insert','".$_SERVER["REMOTE_ADDR"]."','".$uid."')";
 	        $insert =mysqli_query($conn, $query);
        		echo "Attribute Successfully Added";
+       	}
+     }
+
+     /**
+   	 *	Remove student attributes on existing account
+   	 *	Records the changes made to auditlog
+   	 *
+   	 * 	@param String - $uid 		user name of the affected user
+   	 *		   String - $dn 		distinguished name of an LDAP entity
+   	 */
+     function removestudentattr($dn, $uid){
+     	global $ldapconn, $ldapconfig, $userUid, $conn;
+        
+
+     	$ress = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", "uid=".$uid);
+        $entry = ldap_get_entries($ldapconn, $ress);
+
+		$studInfo["objectclass"] = 'UPLBStudent';
+		$studInfo["studentnumber"] =  $entry[0]['studentnumber'][0];
+		$studInfo["studenttype"] =  $entry[0]['studenttype'][0];
+		$studInfo["course"] =  $entry[0]['course'][0];
+		$studInfo["college"] =  $entry[0]['college'][0];
+		$studInfo["activestudent"] =  $entry[0]['activestudent'][0];
+		$studInfo["title"] =  'student';
+			     
+
+     	$del = ldap_mod_del($ldapconn, $dn, $studInfo);
+
+		if(!$del) echo ldap_error($ldapconn);
+       	else {
+       		date_default_timezone_set('Asia/Manila');
+			$query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','deleted','".$_SERVER["REMOTE_ADDR"]."','".$uid."')";
+	        $insert =mysqli_query($conn, $query);
        	}
      }
 
@@ -424,6 +453,8 @@
 
      function searchstudent($filter){
 	   global $ldapconn;
+	   $rowNum = 0;
+
  	   //$editmail = array("mail" => array($newmail));
        $res = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", $filter);
        $entries = ldap_get_entries($ldapconn, $res);
@@ -465,17 +496,22 @@
 								            </tr>';
 									    
 									for($i=0; $i<count($entries)-1; $i++){
-									   echo "<tr>";
-											echo 	"<td><a  style='color:#333333' href='viewprofile.php?title=student&uid=".$entries[$i]['uid'][0]."'";  
+									   echo "<tr id='".$i."'>";
+											echo 	"<td id='identifier' value='".$entries[$i]['uniqueidentifieruplb'][0]."'><a  style='color:#333333' href='viewprofile.php?title=student&uid=".$entries[$i]['uid'][0]."'";  
 											         if (!($_SESSION['activerole'] =='ADMIN' || $_SESSION['activerole']=='HRDO' || $_SESSION['activerole']=='OUR')) echo "onclick='return false;'";        
 													echo ">".$entries[$i]['cn'][0]."</a></td>";										  
-											echo 	"<td>".$entries[$i]['studentnumber'][0]."</td>";
-											echo 	"<td>".$entries[$i]['studenttype'][0]."</td>";
+											echo 	"<td id='uid' value='".$entries[$i]['uid'][0]."'>".$entries[$i]['studentnumber'][0]."</td>";
+											echo 	"<td id='course' value='".$entries[$i]['course'][0]."'>".$entries[$i]['studenttype'][0]."</td>";
 											//check if student has mail 
 										    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
 										    else echo "<td></td>";
-										    echo "<td><button class='btn btn-link btn-normal' id='confirmButton'><i class='icon-remove'></i>Disable</button></td>";
+										    echo "<td id='enable_account' value='".$entries[$i]['activestudent'][0]."'><button class='btn btn-primary' id='enableButton' onclick='enableStudentAccount(".$i.")'>";
+										    		if($entries[$i]['activestudent'][0]=='TRUE') echo "Deactivate";
+										    		else echo "Activate";
+										    		echo" </button></td>";
+									    	echo "<td id='alumniAccount'><button class='btn btn-primary' onclick='addAlumniAttributes(".$i.")'><i class='icon-remove'></i></button></td>";
 									    echo "</tr>";
+									   //$rowNum++;
 					                }
 				echo '</table>';
 		  }
@@ -487,6 +523,7 @@
 	
 	 function searchemployee($filter){
 	   global $ldapconn;
+
  	   //$editmail = array("mail" => array($newmail));
        $res = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", $filter);
        $entries = ldap_get_entries($ldapconn, $res);
@@ -529,18 +566,23 @@
 								            </tr>';
 									    
 									for($i=0; $i<count($entries)-1; $i++){
-									   echo "<tr>";
-											echo 	"<td><a  style='color:#333333' href='viewprofile.php?title=employee&uid=".$entries[$i]['uid'][0]."'>";  
+									   echo "<tr id='".$identifier."'>";
+											echo 	"<td id='identifier' value='".$entries[$i]['uniqueidentifieruplb'][0]."'><a  style='color:#333333' href='viewprofile.php?title=employee&uid=".$entries[$i]['uid'][0]."'>";  
 											         echo $entries[$i]['cn'][0]."</a></td>";														  
-											echo 	"<td>".$entries[$i]['employeenumber'][0]."</td>";
+											echo 	"<td id='uid' value='".$entries[$i]['uid'][0]."'>".$entries[$i]['employeenumber'][0]."</td>";
 											echo 	"<td>".$entries[$i]['employeetype'][0]."</td>";
 											//check if student has mail 
 										    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
 										    else echo "<td></td>";
-											if($entries[$i]['activeemployee'][0]=="TRUE") echo "<td>Active</td>";
-											else echo "<td>Inactive</td>";
+											echo "<td id='enable_account' value='".$entries[$i]['activeemployee'][0]."'><button class='btn btn-primary' id='enableButton' onclick='enableEmployeeAccount(".$i.")'>";
+										    		if($entries[$i]['activeemployee'][0]=='TRUE') echo "Deactivate";
+										    		else echo "Activate";
+										    		echo" </button></td>";
+											// /else echo "<td>Inactive</td>";
 									    echo "</tr>";
+									    //$rowNum++;
 					                }
+
 				echo '</table>';
 		  }
 	   }
@@ -917,8 +959,17 @@
 		case 'savelogstofile':
 		            $dates = $_POST['dates'];
                     savelogstofile($dates);
-                    break;					
-     
+                    break;	
+
+        case 'addalumniattributes':
+		            $dn = $_POST['dn'];
+		            $info = $_POST['info'];
+		            $uid = $_POST['uid'];
+                    addattr($info, $dn, $uid);
+                    removestudentattr($dn, $uid);
+                    break;	
+
+                    			    
 	}
 	
 ?>
