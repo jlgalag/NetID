@@ -241,34 +241,55 @@
 
 <script>
 
-	function enableEmployeeAccount(data){
-		var stat = $("#"+data).children("#enable_account").children("#enableButton").text();
-		var title = 'employee';
-		var uid = $("#"+data).children("#uid").attr('value');
-		var identifier = $("#"+data).children("#identifier").attr('value');
-		var dn = "uniqueIdentifierUPLB="+identifier+",ou=people,dc=uplb,dc=edu,dc=ph";
-		var status = $("#"+data).children("#enable_account").attr('value');
+/**
+*	Activate/Deactive Employee Account
+*
+* 	@param data 			row number in search results
+*
+*/
+function enableEmployeeAccount(data){
 
-		if(stat=='Deactivate') status = 'TRUE';
-		else status = 'FALSE';
+	/**
+	* 	Variables used:
+	*
+	* 	stat 			string		button label (Deactivate,Activate)
+	*	status 			boolean 	active status of employee
+	* 	title			string		type (employee)
+	* 	uid 			string 		user name of employee
+	* 	identifier  	int 	 	uniqueIdentifierUPLB of employee
+	* 	dn 				string 		distinguished name of employee entity
+	*
+	*/
 
-		$.ajax({
-			 type: "POST",
-				url: 'functions.php',
-			    data: 
-				{   
-				    dn : dn,
-				    uid : uid,
-				    status : status,
-				    title : title,
-				 	func: 'delete'
-				},
-			    success: function(data1){
-			    	bootbox.alert('Success!');
-			    	if(status=='TRUE') $("#"+data).children("#enable_account").children("#enableButton").text('Activate');
-	    			else $("#"+data).children("#enable_account").children("#enableButton").text('Deactivate');
-			    }
-		});
-	}
+	var stat = $("#"+data).children("#enable_account").children("#enableButton").text();
+	var status = $("#"+data).children("#enable_account").attr('value');
+	var title = 'employee';
+	var uid = $("#"+data).children("#uid").attr('value');
+	var identifier = $("#"+data).children("#identifier").attr('value');
+	var dn = "uniqueIdentifierUPLB="+identifier+",ou=people,dc=uplb,dc=edu,dc=ph";
+	
+	if(stat=='Deactivate') status = 'TRUE';
+	else status = 'FALSE';
+
+	//call delete function located in functions.php
+	$.ajax({
+		 type: "POST",
+			url: 'functions.php',
+		    data: 
+			{   
+			    dn : dn,
+			    uid : uid,
+			    status : status,
+			    title : title,
+			 	func: 'delete'
+			},
+		    success: function(data1){
+		    	bootbox.alert('Success!');
+		    	//change button text
+		    	if(status=='TRUE') $("#"+data).children("#enable_account").children("#enableButton").text('Activate');
+    			else $("#"+data).children("#enable_account").children("#enableButton").text('Deactivate');
+		    }
+	});
+}
 
 </script>

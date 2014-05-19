@@ -239,7 +239,26 @@
 
 <script>
 
+/**
+*	Activate/Deactive Student Account
+*
+* 	@param data 			row number in search results
+*
+*/
 function enableStudentAccount(data){
+
+	/**
+	* 	Variables used:
+	*
+	* 	stat 			string		button label (Deactivate,Activate)
+	*	status 			boolean 	active status of student
+	* 	title			string		type (student)
+	* 	uid 			string 		user name of student
+	* 	identifier  	int 	 	uniqueIdentifierUPLB of student
+	* 	dn 				string 		distinguished name of student entity
+	*
+	*/
+
 	var stat = $("#"+data).children("#enable_account").children("#enableButton").text();
 	var status = $("#"+data).children("#enable_account").attr('value');
 	var title = 'student';
@@ -250,8 +269,7 @@ function enableStudentAccount(data){
 	if(stat=='Deactivate') status = 'TRUE';
 		else status = 'FALSE';
 
-
-		alert(status);
+	//call delete function located in functions.php
 	$.ajax({
 		type: "POST",
 		url: 'functions.php',
@@ -265,6 +283,7 @@ function enableStudentAccount(data){
 		},
 	    success: function(data1){
 	    	bootbox.alert('Success!');
+	    	//change button text
 	    	if(status=='TRUE') $("#"+data).children("#enable_account").children("#enableButton").text('Activate');
 	    	else $("#"+data).children("#enable_account").children("#enableButton").text('Deactivate');
 	    }
@@ -272,7 +291,26 @@ function enableStudentAccount(data){
 
 }
 
+/**
+*	Add alumni attributes and delete its student attributes
+*
+* 	@param data 			row number in search results
+*
+*/
 function addAlumniAttributes(data){
+
+	/**
+	* 	Variables used:
+	*
+	* 	coursegraduated 	string		course of student (from his course in his student attributes)
+	* 	uid 				string 		user name of student
+	* 	yeargraduated 		year 		current year (from system date)
+	* 	identifier  		int 	 	uniqueIdentifierUPLB of student
+	* 	dn 					string 		distinguished name of student entity
+	* 	info 				array 		contains information to be added
+	*
+	*/
+
 	var coursegraduated = $("#"+data).children("#course").attr('value');
 	var uid = $("#"+data).children("#uid").attr('value');
 	var yeargraduated = <?php echo date("Y"); ?>;
@@ -286,8 +324,7 @@ function addAlumniAttributes(data){
 		"title" : 'alumni'
 	};
 
-	alert(data);
-
+	//call addalumniattributes function located in functions.php
 	$.ajax({
 		 type: "POST",
 			url: 'functions.php',
@@ -300,6 +337,7 @@ function addAlumniAttributes(data){
 			},
 		    success: function(data1){
 		    	bootbox.alert('Successfully added!');
+		    	setTimeout(function() {  $("#"+data).fadeOut('slow') }, 3000);
 		    }
 	});
 }
