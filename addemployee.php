@@ -71,37 +71,37 @@
 						  <div class="control-group">
 						    <label class="control-label" for="inputUsername">Username</label>
 						    <div class="controls">
-						      <input class="input-xlarge" name="uid" type="text" id="inputUsername" placeholder="Username"  value='aopinga'>
+						      <input class="input-xlarge" name="uid" type="text" id="inputUsername" placeholder="Username">
 						    </div>
 						  </div>
 						   <div class="control-group">
 						    <label class="control-label" for="inputFirstname">First Name</label>
 						    <div class="controls">
-						      <input class="input-xlarge" name="firstname" type="text" id="inputFirstname" placeholder="First name"  value='Angelica'>
+						      <input class="input-xlarge" name="firstname" type="text" id="inputFirstname" placeholder="First name">
 						    </div>
 						  </div>
 						   <div class="control-group">
 						    <label class="control-label" for="inputMiddleInitial">Middle Initial</label>
 						    <div class="controls">
-						      <input class="input-xlarge" name="givenname" type="text" id="inputMiddleInitial" placeholder="MI"  value='O'>
+						      <input class="input-xlarge" name="givenname" type="text" id="inputMiddleInitial" placeholder="MI">
 						    </div>
 						  </div>
 						   <div class="control-group">
 						    <label class="control-label" for="inputSurname">Surname</label>
 						    <div class="controls">
-						      <input  class="input-xlarge" name="sn" type="text" id="inputSurname" placeholder="Surname"   value='Pinga'>
+						      <input  class="input-xlarge" name="sn" type="text" id="inputSurname" placeholder="Surname">
 						    </div>
 						  </div>
 						   <div class="control-group">
 						    <label class="control-label" for="inputEmail">Email</label>
 						    <div class="controls">
-						      <input class="input-xlarge" name="mail" type="email" id="inputEmail" placeholder="Email"  value='aopinga@gmail.com'>
+						      <input class="input-xlarge" name="mail" type="email" id="inputEmail" placeholder="Email">
 						    </div>
 						  </div>
 						   <div class="control-group">
 						    <label class="control-label" for="inputEmployeenumber">Employee Number</label>
 						    <div class="controls">
-						      <input class="input-xlarge" name="employeenumber" type="text" id="inputEmployeenumber" placeholder="xxxxxxxxx"  value='100000000'>
+						      <input class="input-xlarge" name="employeenumber" type="text" id="inputEmployeenumber" placeholder="xxxxxxxxx">
 						    </div>
 						  </div>
 						     <div class="control-group">

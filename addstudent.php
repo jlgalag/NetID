@@ -68,39 +68,39 @@
 						  <div class="control-group">
 						    <label class="control-label" for="inputUsername">Username</label>
 						    <div class="controls">
-						      <input class="input-large" name="uid" type="text" id="inputUsername" placeholder="Username" value='aopinga'>
+						      <input class="input-large" name="uid" type="text" id="inputUsername" placeholder="Username">
 							  <span id="uiderror"></span>
 							</div>
 						  </div>
 						   <div class="control-group">
 						    <label class="control-label" for="inputFirstname">First Name</label>
 						    <div class="controls">
-						      <input class="input-large" name="firstname" type="text" id="inputFirstname" placeholder="First Name"  value='Angelica'>
+						      <input class="input-large" name="firstname" type="text" id="inputFirstname" placeholder="First Name">
 							  
 						    </div>
 						  </div>
 						   <div class="control-group">
 						    <label class="control-label" for="inputMiddleInitial">Middle Initial</label>
 						    <div class="controls">
-						      <input class="input-large" name="givenname" type="text" id="inputMiddleInitial" placeholder="MI"  value='O'>
+						      <input class="input-large" name="givenname" type="text" id="inputMiddleInitial" placeholder="MI">
 						    </div>
 						  </div>
 						   <div class="control-group">
 						    <label class="control-label" for="inputSurname">Surname</label>
 						    <div class="controls">
-						      <input  class="input-large" name="sn" type="text" id="inputSurname" placeholder="Surname"   value='Pinga'>
+						      <input  class="input-large" name="sn" type="text" id="inputSurname" placeholder="Surname">
 						    </div>
 						  </div>
 						   <div class="control-group">
 						    <label class="control-label" for="inputEmail">Email</label>
 						    <div class="controls">
-						      <input class="input-large" name="mail" type="text" id="inputEmail" placeholder="Email"  value='aopinga@gmail.com'>
+						      <input class="input-large" name="mail" type="text" id="inputEmail" placeholder="Email">
 						    </div>
 						  </div>
 						   <div class="control-group">
 						    <label class="control-label" for="inputStudentnumber">Student Number</label>
 						    <div class="controls">
-						      <input class="input-large" name="studentnumber" type="text" id="inputStudentnumber" placeholder="xxxx-xxxxx"  value='2013-60959'>
+						      <input class="input-large" name="studentnumber" type="text" id="inputStudentnumber" placeholder="xxxx-xxxxx">
 						    </div>
 						  </div>
 						     <div class="control-group">

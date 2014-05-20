@@ -1,3 +1,14 @@
+<script type=" text/javascript">
+		$(function() {
+					$('#confirmButton').click(function () {
+	           	bootbox.confirm('Are you sure you want to ',
+	           		function(result) {
+	           		});
+
+				});
+			});
+</script>
+
 <?php
     require 'tools/PHPMailer_5.2.4/class.phpmailer.php';
    	require 'ldap_config.php'; 
@@ -9,21 +20,22 @@
 		 echo "Failed to connect to MySQL: " . mysqli_connect_error();
 		 
     function sendmail($subject, $data, $to){
-		$from = "itcspmanager@uplb.edu.ph";
+		$from = "ace.almazar@gmail.com";
 		$mail = new PHPMailer;
 
 
 		$mail->IsSMTP();  // telling the class to use SMTP
-		$mail->Host     = "202.92.144.18"; // SMTP server
-		$mail->SMTPAuth - true;
+		$mail->Host     = "smtp.gmail.com"; // SMTP server
+		$mail->SMTPAuth = true;
 		$mail->SMTPDebug = 1;
-		$mail->Port = 25;
-		$mail->Username="itcspmanager";
-		$mail->Password="1tc5pm4n4g3r";
+		$mail->SMTPSecure = 'ssl';
+		$mail->Port = 465	;
+		$mail->Username="ace.almazar@gmail.com";
+		$mail->Password="khairilkrish";
 
 		$mail->IsHTML(true); 
 
-		$mail->From     = $from;
+		$mail->SetFrom     = $from;
 		$mail->FromName = "UPLB NETID";
 		$mail->AddAddress($to);
 
@@ -55,9 +67,12 @@
 
 	   	//makes changes in the server
 	   	$res = ldap_modify($ldapconn, $dn, $info);
-	   
+	   	
+	   	if(strpos($dn, 'disabled')) $ndn = "ou=disabledAccounts,dc=uplb,dc=edu,dc=ph";
+	   	else $ndn = "ou=people,dc=uplb,dc=edu,dc=ph";
+
 	   	//searches for the entry's attributes
-	 	$sr=ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", "(&(uid=".$uid.")(title=".$title."))");
+	 	$sr=ldap_search($ldapconn, $ndn, "(&(uid=".$uid.")(title=".$title."))");
 		$entries = ldap_get_entries($ldapconn, $sr);
 
 		//variable rename is set to 1 initially, if the entry has both disabled employee and student accounts. it will be disabled
@@ -65,11 +80,14 @@
 
 	   	if ($entries[0]['activeemployee'][0] == 'FALSE'){
 	   		$rename = 0;
-	   		if($entries[0]['activestudent'] == 'FALSE'){
+	   		if($entries[0]['activestudent'][0] == 'FALSE'){
 	   			$rename = 0;
-	   		}else $rename = 1;
+	   		}else if($entries[0]['activestudent'][0] == 'TRUE') $rename = 1;
 	   	}else if ($entries[0]['activestudent'][0] == 'FALSE'){
 	   		$rename = 0;
+	   		if($entries[0]['activeemployee'][0] == 'FALSE'){
+	   			$rename = 0;
+	   		}else if($entries[0]['activeemployee'][0] == 'TRUE') $rename = 1;
 	   	}else $rename = 1;
 		
 		//moves the dn of entry to disabledAccounts if rename is set to 0
@@ -77,6 +95,12 @@
 			$newRdn = 'uniqueIdentifierUPLB='.$entries[0]['uidnumber'][0];
 			$newParent = 'ou=disabledAccounts,dc=uplb,dc=edu,dc=ph';
 			$ren = ldap_rename($ldapconn, $dn, $newRdn, $newParent, true);
+		}
+		//however if rename is 1, entry is activated
+		else if($rename == 1){
+			$newRdn = 'uniqueIdentifierUPLB='.$entries[0]['uidnumber'][0];
+			$newParent = 'ou=people,dc=uplb,dc=edu,dc=ph';
+			$ren = ldap_rename($ldapconn, 'uniqueIdentifierUPLB='.$entries[0]['uidnumber'][0].',ou=disabledAccounts,dc=uplb,dc=edu,dc=ph', $newRdn, $newParent, true);
 		}
 
 
@@ -90,6 +114,7 @@
 	   else      echo ldap_error($ldapconn );
 
        mysqli_close($conn);		
+       return;
 	}
 	
 	 // Edit email address

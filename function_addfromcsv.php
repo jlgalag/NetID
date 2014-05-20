@@ -5,10 +5,10 @@
 	require 'frag_sessions.php';
 	 ini_set('max_execution_time', 300);
 	
-	$search = ldap_search($ldapconn, 'ou=numberHolder,dc=uplb,dc=edu,dc=ph', "(cn=uidLatestNumber)");
+	$search = ldap_search($ldapconn, "ou=numberholder,".$ldapconfig['basedn'], "cn=uidlatestnumber");
     $entry = ldap_get_entries($ldapconn, $search);
     $uidnumholderdn = $entry[0]['dn'];	
-    $uidnumholder = $entry[0]['serialNumber'][0];
+    $uidnumholder = $entry[0]['serialnumber'][0]+1;
 
 	 //User with STUDENT or EMPLOYEE as role cannot view this page
 	if(!($activerole=='OUR' || $activerole=='ADMIN' || $activerole=='HRDO'))
@@ -23,8 +23,8 @@
 
 
 		$mail->IsSMTP();  // telling the class to use SMTP
-		$mail->Host     = "202.92.144.18"; // SMTP server
-		$mail->SMTPAuth - true;
+		$mail->Host     = "202.92.144.113"; // SMTP server
+		$mail->SMTPAuth = true;
 		$mail->SMTPDebug = 1;
 		$mail->Port = 25;
 		$mail->Username="itcspmanager";
@@ -64,25 +64,65 @@ function generatepassword() {
 
 
 }	
+	function addattributes($info2,$cn,$username){
+		global $ldapconn, $ldapconfig;
+		$search = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(|(cn=".$cn.")(uid=".$username."))");
+	    $entry = ldap_get_entries($ldapconn, $search);
+	    $uidnumholder2 = $entry[0]['uidnumber'][0]; 
+	    $dry = ldap_mod_add($ldapconn, "uniqueIdentifierUPLB=".$uidnumholder2.",ou=people,dc=uplb,dc=edu,dc=ph", $info2);
+	    return($dry);
+	}
 
-     function checkstudentnumber($studentnumber){
+
+     function checkstudentnumber($studentnumber,$username,$cn){
 	  global $ldapconn, $ldapconfig;
-	  $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(studentNumber=".$studentnumber.")",  array("uid"));
+	  /*$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(studentNumber=".$studentnumber.")",  array("uid"));
 	  if(ldap_count_entries($ldapconn, $sr) > 0){
 	     $entry = ldap_get_entries($ldapconn, $sr);
 		 return $entry[0]['uid'][0]; 
 	  }
-      else return NULL;	 
+      else return NULL;	
+      */
+      	$sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=student)(|(uid=".$username.")(studentnumber=".$studentnumber.")))", array("uid"));
+	  	$count = ldap_count_entries($ldapconn, $sr);
+
+		$sr2 = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=employee)(|(uid=".$username.")(cn=".$cn.")))", array("uid"));
+	  	$count2 = ldap_count_entries($ldapconn, $sr2);
+
+	  	$sr3 = ldap_search($ldapconn, "ou=disabledaccounts,".$ldapconfig['basedn'], "(&(title=student)(|(uid=".$username.")(cn=".$cn.")))", array("uid"));
+	  	$count3 = ldap_count_entries($ldapconn, $sr3);
+
+	  	if(ldap_count_entries($ldapconn, $sr) > 0){
+	    	$entry = ldap_get_entries($ldapconn, $sr);
+		 	return $entry[0]['uid'][0]; 
+	  	}else   if(ldap_count_entries($ldapconn, $sr2) > 0){
+		 	return "ADDattr"; 
+	  	}else if(ldap_count_entries($ldapconn, $sr3) > 0){
+		 	return "AcctDisabled"; 
+	  	}else return "ADDentry";
+
 	}
 	
-	function checkemployeenumber($employeenumber){
+	function checkemployeenumber($employeenumber,$username,$cn){
 	  global $ldapconn, $ldapconfig;
-	  $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(employeeNumber=".$employeenumber.")",  array("uid"));
-	  if(ldap_count_entries($ldapconn, $sr) > 0){
-	     $entry = ldap_get_entries($ldapconn, $sr);
-		 return $entry[0]['uid'][0]; 
-	  }
-      else return NULL;	 
+	  
+	    $sr = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=employee)(|(uid=".$username.")(employeenumber=".$employeenumber.")))", array("uid"));
+	  	$count = ldap_count_entries($ldapconn, $sr);
+
+		$sr2 = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "(&(title=student)(|(uid=".$username.")(cn=".$cn.")))", array("uid"));
+	  	$count2 = ldap_count_entries($ldapconn, $sr2);
+
+	  	$sr3 = ldap_search($ldapconn, "ou=disabledaccounts,".$ldapconfig['basedn'], "(&(title=employee)(|(uid=".$username.")(cn=".$cn.")))", array("uid"));
+	  	$count3 = ldap_count_entries($ldapconn, $sr3);
+
+	  	if(ldap_count_entries($ldapconn, $sr) > 0){
+	    	$entry = ldap_get_entries($ldapconn, $sr);
+		 	return $entry[0]['uid'][0]; 
+	  	}else   if(ldap_count_entries($ldapconn, $sr2) > 0){
+		 	return "ADDattr"; 
+	  	}else if(ldap_count_entries($ldapconn, $sr3) > 0){
+		 	return "AcctDisabled"; 
+	  	}else return "ADDentry";
    }
 	
 
@@ -95,14 +135,14 @@ function generatepassword() {
 		return $encrypted = "{SSHA}".base64_encode( sha1( $string . $salt, true) . $salt );
 	}
 
-  function csvaddentry($info,$dn, $title){
+  function csvaddentry($info,$dn, $title, $uidnumholder, $uidnumholderdn){
+
         global $ldapconn, $titletoadd;
 		$activerole = $_SESSION['activerole'];
-  
-        
 	
-	    $info["uidnumber"] = $uidnumholder;
+	    $info["uidnumber"] =  $uidnumholder;
 	    $info["objectclass"][0] = "UPLBEntity";
+
 	    if($title == "student")
 	    	$info["objectclass"][1] = "UPLBStudent";
 	    else if($title == "employee")
@@ -113,55 +153,87 @@ function generatepassword() {
 		$info['userpassword'] = encrypt($info['userpassword']);
 
         if($info['title'] != $titletoadd ) return false;
-		
+
 		if($info['title'] == 'student'){
-		  $checkstudnum = checkstudentnumber($info['studentnumber']);
-		  if($checkstudnum!= NULL)
-		      {
-			      echo "<tr><td>".$info['cn']."</td>";  
-				  echo "<td colspan='4'><a href='viewprofile.php?title=student&uid=".$checkstudnum."'></b>".$info['studentnumber']."</b></a> already exists.</td></tr>"; 
-                  return false;													
-			  }
-		}	  
-		else{
-		  $checkempnum = checkemployeenumber($info['employeenumber']);
-		  if($checkempnum!= NULL)
-		      {
+		  	$checkstudnum = checkstudentnumber($info['studentnumber'],$info['uid'],$info['cn']);
+			//entry is already present with student attributes
+			if($checkstudnum!= "ADDattr" && $checkstudnum != "ADDentry" && $checkstudnum != "AcctDisabled")
+			{
+				echo "<tr><td>".$info['cn']."</td>";  
+				echo "<td colspan='4'><a href='viewprofile.php?title=student&uid=".$checkstudnum."'></b>".$info['studentnumber']."</b></a> already exists.</td></tr>"; 
+	            return false;													
+			}
+			//entry is already present but certain attributes should be added
+			else if ($checkstudnum == "ADDattr") {
+				$info2['studentnumber'] = $info['studentnumber'];
+				$info2['objectclass'] = "UPLBStudent";
+				$info2['studenttype'] = $info['studenttype'];
+				$info2['college'] = $info['college'];
+				$info2['course'] = $info['course'];
+				$info2['activestudent'] = "TRUE";
+				$info2['title'] = "student";
+ 				$addr = addattributes($info2,$info['cn'],$info['uid']);
+			}
+			//entry is disabled
+			else if($checkstudnum == "AcctDisabled"){
+				echo "<tr><td>".$info['cn']."</td>";  
+				echo "<td colspan='4'><a href='viewprofile_dis.php?title=student&uid=".$info['uid']."'></b>".$info['studentnumber']."</b></a> is inactive.</td></tr>"; 
+	            return false;	
+			}
+			//entry should be added
+			else$add = ldap_add($ldapconn, $dn, $info);
+		}else{
+		  	$checkempnum = checkemployeenumber($info['employeenumber'],$info['uid'],$info['cn']);
+		  	//entry is already present with employee attributes
+		  	if($checkstudnum!= "ADDattr" && $checkstudnum != "ADDentry" && $checkstudnum != "AcctDisabled")
+		    {
 			    echo "<tr><td><b>".$info['cn']."</b></td>";  
-				  echo "<td colspan='4'><a href='viewprofile.php?title=employee&uid=".$checkempnum."'></b>".$info['employeenumber']."</b></a> already exists.</td></tr>"; 
-                  return false;	
-			  }
+				echo "<td colspan='4'><a href='viewprofile.php?title=employee&uid=".$checkempnum."'></b>".$info['employeenumber']."</b></a> already exists.</td></tr>"; 
+                return false;	
+			}
+			//entry is already present but certain attributes should be added
+			else if ($checkstudnum == "ADDattr") {
+				$info2['employeenumber'] = $info['employeenumber'];
+				$info2['employeetype'] = $info['employeetype'];
+				$info2['objectclass'] = "UPLBEmployee";
+				$info2['o'] = $info['o'];
+				$info2['ou'] = $info['ou'];
+				$info2['activeemployee'] = "TRUE";
+				$info2['title'] = "employee";
+ 				$addr = addattributes($info2,$info['cn'],$info['uid']);
+			}
+			//entry is disabled
+			else if($checkstudnum == "AcctDisabled"){
+				echo "<tr><td>".$info['cn']."</td>";  
+				echo "<td colspan='4'><a href='viewprofile_dis.php?title=employee&uid=".$info['uid']."'></b>".$info['studentnumber']."</b></a> is inactive.</td></tr>"; 
+	            return false;	
+			}
+			//add entry
+			else $add = ldap_add($ldapconn, $dn, $info);
 		}
-		
-		$add = ldap_add($ldapconn, $dn, $info);
         
        	//increase uidnumberholder
-        $dnuidnumberholder = 'ou=numberHolder,dc=uplb,dc=edu,dc=ph';		
-	    $newuidnumholder = array("uidLatestNumber" => array($serialNumber+ 1));
-        if($add)	   
-			$moduid = ldap_modify($ldapconn, $dnuidnumberholder, $newuidnumholder);
-    
-	    if($add && $moduid) {
+        if($add){
+       		//modify uidLatestNumber
+	        $dnuidnumberholder = 'cn=uidLatestNumber,ou=numberholder,dc=uplb,dc=edu,dc=ph';		
+		    $newuidnumholder = array("serialnumber" => array($info['uidnumber']));
+		    $moduid = ldap_modify($ldapconn, $dnuidnumberholder, $newuidnumholder);
+        }
+
+	    if(($add && $moduid) || $addr) {
+
 		     //SEND EMAIL
-			if($info['mail'] != NULL){
-						$subject = "UPLB LDAP Account created";
-						$data = "<p>Hi ".$info['mail']."<br/><br/>".
-						            "You're UPLB NetID account has been created.". "<br/>".
-							        "Your username is <b>". $info['uid'] ."</b> and your password is <b>".$userpassword. "</b>"."<br/>". 
-									"NetID account is used by various UPLB network services, like the UPLB Wifi, for user authentication."."<br/>".
-									"Visit \<NetID web page\> and change your password right away.<br/><br/>".
-									"Sincerely,"."<br/>".
-									"UPLB NetID Account team". "<br/></p>";
-						
-						$sent = sendmail($subject ,$data, $info['mail']);	
-			}
 			
 			 echo "<tr>";
 				echo 	"<td><a  style='color:#333333' href='viewprofile.php?title=".$title."&uid=".$info['uid']."'>";  
 				echo           $info['cn']."</a></td>";														  // OUR, HRDO, and ADMIN users will be able to 
-				if($titletoadd=='student')  echo 	"<td>".$info['studentnumber']."</td>";
-				else 				        echo 	"<td>".$info['employeenumber']."</td>";	
-											echo 	"<td>".$info['ou']."</td>";
+				if($titletoadd=='student') {
+					echo 	"<td>".$info['studentnumber']."</td>";
+					echo 	"<td>".$info['college']."</td>";
+				}else{
+					echo 	"<td>".$info['employeenumber']."</td>";	
+					echo 	"<td>".$info['ou']."</td>";
+				}
 										    echo 	"<td>".$info['mail']."</td>";
 				if($sent)                   echo "<td><i class='icon-ok'></td>";
 				else                        echo "<td><i class='icon-remove'></td>";
@@ -233,7 +305,6 @@ function generatepassword() {
 						       "files/csvuploads/{$_FILES['file'] ['name']}");
 						 // echo "role: ".$role."<br/>";
 						  echo "<br>Uploaded: " . $_FILES["file"]["name"] . "<br>";
-						
 						  //echo "Type: " . $_FILES["file"]["type"] . "<br>";
 						  //echo "Size: " . ($_FILES["file"]["size"] / 1024) . " kB<br>";
 						  //echo "Stored in: " . $_FILES["file"]["tmp_name"];
@@ -259,44 +330,54 @@ function generatepassword() {
 						        for ($c=0; $c < $num; $c++) {
 						            //echo $data[$c] . "<br />\n";
 						        }
-								if($titletoadd == 'student'){
-									$info['uniqueIdentifierUPLB'] = $uidnumholder;
+						        	$info['uniqueIdentifierUPLB'] = $uidnumholder;
 									$info['uid'] = $data[0];
 									$info['cn'] = $data[1];
 									$info['sn'] = $data[2];
 									$info['givenname'] = $data[3];
 									$info['mail'] = $data[4];
-									$info['studentnumber'] = $data[5];
-									$info['studenttype'] = $data[6];
 									$info['gidnumber'] = $data[7];
-									$info['course'] = $data[8];
-									$info['homedirectory'] = $data[9];
+									$info['homedirectory'] = "/home/".$uid;
+									$info['loginshell'] = "/bin/bash";
 									$info['title'] = $data[10];
-							        $info['userpassword'] = generatepassword();
+									$info['userpassword'] = generatepassword();
 							        $info['securityquestion'] = generatepassword();
 							        $info['securityanswer'] = generatepassword();
+							       	$info['displayname'] = $data[1];
+							       	$info['personaltitle'] = "Mr";
  									$dn = "uniqueIdentifierUPLB=".$uidnumholder.",ou=people,dc=uplb,dc=edu,dc=ph";
+ 									
+ 									//gets college or office from database depending in gidnumber
+ 									$conn = mysqli_connect('localhost','root','','netid');
+									    // Check connection
+										if (!mysqli_connect_errno($conn)){
+											$query="SELECT name FROM college offices where gidnumber=".$data[7];
+											$college=mysqli_query($conn, $query);
+											$row = mysqli_fetch_array($college);
+											$CO = $row['name'];
+										}
+										else echo "<option>Cannot connect to the database</option>";
+									mysqli_close($conn);
+								//student attributes
+							    if($titletoadd == 'student'){
+									$info['studentnumber'] = $data[5];
+									$info['studenttype'] = $data[6];
+									$info['course'] = $data[8];									
+									$info['college'] =  $CO;
+									$info['activestudent'] = "TRUE";    
 								}
+								//employee attributes
 								else{
-									$info['uniqueIdentifierUPLB'] = $uidnumholder;
-									$info['uid'] = $data[0];
-									$info['cn'] = $data[1];
-									$info['sn'] = $data[2];
-									$info['givenname'] = $data[3];
-									$info['mail'] = $data[4];
 									$info['employeenumber'] = $data[5];
 									$info['employeetype'] = $data[6];
-									$info['gidnumber'] = $data[7];
+									$info['o'] = $CO;
 									$info['ou'] = $data[8];
-									$info['homedirectory'] = $data[9];
-									$info['title'] = $data[10];
-							        $info['userpassword'] = generatepassword();
-									$dn = "uniqueIdentifierUPLB=".$uidnumholder.",ou=people,dc=uplb,dc=edu,dc=ph";
+							        $info['activeemployee'] = "TRUE";
 								}
-							    $add = csvaddentry($info,$dn,$titletoadd);
+							    $add = csvaddentry($info,$dn,$titletoadd, $uidnumholder, $uidnumholderdn);
 								if($add){
 									$count++;							
-									//$uidnumholder++;
+									$uidnumholder++;
 								}
 						}
 					    fclose($handle);

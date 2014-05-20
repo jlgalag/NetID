@@ -161,6 +161,7 @@ else if($activerole=='ADMIN')
 
 ?>
 <li <?php if($active==1) echo 'class="active"'; ?>><a href="home.php">Profile</a></li>
+<li class="divider"></li>
 <li class="nav-header">Student</li>
 <li  class="dropdown-submenu" <?php if($active==2) echo 'class="active"'; ?>>
    <a>Colleges</a>
@@ -172,6 +173,7 @@ else if($activerole=='ADMIN')
 <li <?php if($active==6) echo 'class="active"'; ?> >
     <a href="searchstudent.php">Search Student</a>
 </li>	
+<li class="divider"></li>
 <li class="nav-header">Employee</li>
 <li class="dropdown-submenu <?php if($active==4) echo 'class="active"'; ?>">
 	<a>Offices</a>
@@ -187,6 +189,7 @@ else if($activerole=='ADMIN')
 <li <?php if($active==7) echo 'class="active"'; ?> >
 <a href="searchemployee.php">Search Employee</a>
 </li>
+<li class="divider"></li>
 <li class="nav-header">View</li>
 <li <?php if($active==8) echo 'class="active"'; ?> >
 	<a href="viewroles.php">User Roles</a>
@@ -202,9 +205,16 @@ else if($activerole=='ADMIN')
 </li>
 <li class="divider"></li>
 <li <?php if($active==12) echo 'class="active"'; ?> >
-	<a href="addgroup.php">Add Degree Program</a>
+	<a href="addgroup.php">Add Degree Program</a>	
 </li>
-
+<li class="divider"></li>
+<li class="dropdown-submenu <?php if($active==13) echo 'class="active"'; ?>">
+	<a>Disabled Accounts</a>
+	<ul class="dropdown-menu">      
+		<li><a tabindex="-1" href="frag_disabled_employee.php?&orderby=sn">Employee</a></li>
+		<li><a tabindex="-1" href="frag_disabled_student.php?&orderby=sn">Student</a></li>	
+	</ul>
+</li>
 <?php
 }
 ?>

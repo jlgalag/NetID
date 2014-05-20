@@ -432,7 +432,8 @@ function addstudent(){
 					       "studenttype" :     document.getElementById('inputStudenttype').value.trim(),
 					       "course" :              document.getElementById('inputOu').value.trim(),
 					       "college" : 			el.options[el.selectedIndex].text,
-					       "activestudent" :  	   document.getElementById('inputActive').value.trim()	
+					       "activestudent" :  	   document.getElementById('inputActive').value.trim(),
+					       "title" : 'student'
 					  	};
 
 					  	msg = "<table class='table table-condensed'>"
@@ -587,7 +588,8 @@ function addemployee(){
 					       "employeetype" :     document.getElementById('inputEmployeetype').value.trim(),
 					       "ou" :              document.getElementById('inputOu').value.trim(),
 					       "o" : 				el.options[el.selectedIndex].text,
-					       "activeemployee" : document.getElementById('inputActive').value.trim()
+					       "activeemployee" : document.getElementById('inputActive').value.trim(),
+					       "title" : 'employee'
 					  	};
 
 					  	msg = "<table class='table table-condensed'>"

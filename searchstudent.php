@@ -1,4 +1,3 @@
-
 <?php
 
 	include 'ldap_config.php'; 
