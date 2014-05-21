@@ -515,9 +515,14 @@
 								                 <th>Name</th>
 								                 <th>Student Number</th>
 												 <th>Type</th>
+<<<<<<< Updated upstream
 								                 <th>Mail</th>';
 								                if($role==('ADMIN' || 'OUR')){
 								               		echo  '<th>Status</th>
+=======
+								                 <th>Mail</th>
+								                 <th>Status</th>
+>>>>>>> Stashed changes
 								                 <th>Undergrad</th>
 								            </tr>';
 								        }else echo '</tr>';
