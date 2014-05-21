@@ -206,8 +206,8 @@
 							    </td>
 							   </tr>
 						</table>
-						<button class="btn btn-primary pull-right" style="margin-right:10px;" type="submit" name="searchstudentbutton"><i class="icon-search icon-white"></i>  Search</button>
-															
+						<input type="hidden" id="hiddenactiverole" name="activerole" value="<?php echo $activerole?>"/>
+						<button class="btn btn-primary pull-right" style="margin-right:10px;" type="submit" name="searchstudentbutton"><i class="icon-search icon-white"></i>  Search</button>									
 					</form>	
 			    
 			<!-- Search results will be displayed here-->		
@@ -281,7 +281,7 @@ function enableStudentAccount(data){
 		 	func: 'delete'
 		},
 	    success: function(data1){
-	    	bootbox.alert('Success!');
+	    	bootbox.alert('Sucess!');
 	    	//change button text
 	    	if(status=='TRUE') $("#"+data).children("#enable_account").children("#enableButton").text('Activate');
 	    	else $("#"+data).children("#enable_account").children("#enableButton").text('Deactivate');

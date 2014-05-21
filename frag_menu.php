@@ -1,6 +1,6 @@
 <?php
     // create dropdown of degree programs based on the given gidnumber/college
-	function showdegreeprograms($gidnumber){
+	function showdegreeprograms($gidnumber, $iden){
 		 $conn = mysqli_connect('localhost','root','','netid');
 	    // Check connection
 		if (!mysqli_connect_errno($conn)){
@@ -10,7 +10,8 @@
 			$degreeprograms = mysqli_query($conn, $query);
 					
 			while($row2 = mysqli_fetch_array($degreeprograms)){
-				echo '<li><a tabindex="-1" href="frag_liststudent.php?dp='.$row2['name'].'&orderby=sn">'.$row2['title'].'</a></li>';
+				if($iden == 'student') echo '<li><a tabindex="-1" href="frag_liststudent.php?dp='.$row2['name'].'&orderby=sn">'.$row2['title'].'</a></li>';
+				else echo '<li><a tabindex="-1" href="frag_listalumni.php?dp='.$row2['name'].'&orderby=sn">'.$row2['title'].'</a></li>';
 			}
 				
 			echo '</ul>';
@@ -20,7 +21,7 @@
      }
   
     //create dropdown of colleges and degree programs (CAS - BSCS, BSBIO..)
-    function showcollegesanddegreeprograms(){
+    function showcollegesanddegreeprograms($iden){
         $conn = mysqli_connect('localhost','root','','netid');
 	    // Check connection
 		if (!mysqli_connect_errno($conn)){
@@ -33,7 +34,7 @@
 			while($row = mysqli_fetch_array($college)){
 			    echo '<li class="dropdown-submenu">';
 				echo    '<a tabindex="-1" href="#">'.$row['name'].'</a>';
-			    showdegreeprograms($row['gidnumber']);
+			    showdegreeprograms($row['gidnumber'], $iden);
 			    echo '</li>';    
 			}	
 			echo '</ul>';
@@ -92,7 +93,7 @@
 
 <!--  ROLE = student / employee    -->
 <?php 
-if ($activerole=='student' || $activerole=='employee'){
+if ($activerole=='student' || $activerole=='employee' || $activerole=='alumni'){
 ?>
 <li <?php if($active==1) echo 'class="active"'; ?>><a href="home.php">Profile</a></li>
 
@@ -120,7 +121,9 @@ else if($activerole=='OUR')
 <li <?php if($active==1) echo 'class="active"'; ?>><a href="home.php">Profile</a></li>
 <li class="dropdown-submenu" <?php if($active==2) echo 'class="active"'; ?>>
 	<a>Colleges</a>
-	<?php  showcollegesanddegreeprograms(); ?>
+	<?php  
+	$iden = 'student';
+	showcollegesanddegreeprograms(); ?>
 </li>
 <li <?php if($active==3) echo 'class="active"'; ?> >
 	<a href="addstudent.php">Add Student</a>
@@ -128,7 +131,14 @@ else if($activerole=='OUR')
 <li <?php if($active==6) echo 'class="active"'; ?> >
 	<a href="searchstudent.php">Search Student</a>
 </li>
-
+<li class="divider"></li>
+<li class="nav-header">Alumni</li>
+<li  class="dropdown-submenu" <?php if($active==13) echo 'class="active"'; ?>>
+   <a>Colleges</a>
+	<?php  
+	$iden = 'alumni';
+	showcollegesanddegreeprograms(); ?>
+</li>
 
 <!--  ROLE = HRDO  -->
 <?php
@@ -165,7 +175,9 @@ else if($activerole=='ADMIN')
 <li class="nav-header">Student</li>
 <li  class="dropdown-submenu" <?php if($active==2) echo 'class="active"'; ?>>
    <a>Colleges</a>
-	<?php  showcollegesanddegreeprograms(); ?>
+	<?php  
+	$iden = "student";
+	showcollegesanddegreeprograms($iden); ?>
 </li>
 <li <?php if($active==3) echo 'class="active"'; ?> >
 	<a href="addstudent.php">Add Student</a>
@@ -190,6 +202,14 @@ else if($activerole=='ADMIN')
 <a href="searchemployee.php">Search Employee</a>
 </li>
 <li class="divider"></li>
+<li class="nav-header">Alumni</li>
+<li  class="dropdown-submenu" <?php if($active==13) echo 'class="active"'; ?>>
+   <a>Colleges</a>
+	<?php  
+	$iden = 'alumni';
+	showcollegesanddegreeprograms(); ?>
+</li>
+<li class="divider"></li>
 <li class="nav-header">View</li>
 <li <?php if($active==8) echo 'class="active"'; ?> >
 	<a href="viewroles.php">User Roles</a>
@@ -208,9 +228,9 @@ else if($activerole=='ADMIN')
 	<a href="addgroup.php">Add Degree Program</a>	
 </li>
 <li class="divider"></li>
-<li class="dropdown-submenu <?php if($active==13) echo 'class="active"'; ?>">
+<li class="dropdown-submenu" class='active'>
 	<a>Disabled Accounts</a>
-	<ul class="dropdown-menu">      
+	<ul class="dropdown-menu" <?php if($active==2) echo 'class="active"'; ?>>      
 		<li><a tabindex="-1" href="frag_disabled_employee.php?&orderby=sn">Employee</a></li>
 		<li><a tabindex="-1" href="frag_disabled_student.php?&orderby=sn">Student</a></li>	
 	</ul>

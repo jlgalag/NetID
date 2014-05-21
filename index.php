@@ -116,9 +116,14 @@ if(isset($_SESSION['userUid']))
 						    } 
 				
                     ?> 
-                    </span> 					
+                    </span>
  					    <input name="userUid" type="text" class="input-block-level" required="required" placeholder="User ID">
 				        <input name="userPassword" type="password" class="input-block-level" required="required" placeholder="Password">
+				        <?php
+                    	if(isset($_GET['auth']) && $_GET['auth'] == 'false') {
+						  echo("<h5>Incorrect Username or Password</h5>"); 
+						}
+						?>
 				        <input class="btn btn-large btn-primary" name="loginbutton" type="submit" value="Sign in"/>
 					</form>	
 				</div>

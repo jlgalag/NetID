@@ -118,7 +118,7 @@ function generatepassword() {
 	  	if(ldap_count_entries($ldapconn, $sr) > 0){
 	    	$entry = ldap_get_entries($ldapconn, $sr);
 		 	return $entry[0]['uid'][0]; 
-	  	}else   if(ldap_count_entries($ldapconn, $sr2) > 0){
+	  	}else if(ldap_count_entries($ldapconn, $sr2) > 0){
 		 	return "ADDattr"; 
 	  	}else if(ldap_count_entries($ldapconn, $sr3) > 0){
 		 	return "AcctDisabled"; 
@@ -157,7 +157,7 @@ function generatepassword() {
 		if($info['title'] == 'student'){
 		  	$checkstudnum = checkstudentnumber($info['studentnumber'],$info['uid'],$info['cn']);
 			//entry is already present with student attributes
-			if($checkstudnum!= "ADDattr" && $checkstudnum != "ADDentry" && $checkstudnum != "AcctDisabled")
+			if($checkstudnum != "ADDattr" && $checkstudnum != "ADDentry" && $checkstudnum != "AcctDisabled")
 			{
 				echo "<tr><td>".$info['cn']."</td>";  
 				echo "<td colspan='4'><a href='viewprofile.php?title=student&uid=".$checkstudnum."'></b>".$info['studentnumber']."</b></a> already exists.</td></tr>"; 
@@ -185,14 +185,14 @@ function generatepassword() {
 		}else{
 		  	$checkempnum = checkemployeenumber($info['employeenumber'],$info['uid'],$info['cn']);
 		  	//entry is already present with employee attributes
-		  	if($checkstudnum!= "ADDattr" && $checkstudnum != "ADDentry" && $checkstudnum != "AcctDisabled")
+		  	if($checkempnum!= "ADDattr" && $checkempnum != "ADDentry" && $checkempnum != "AcctDisabled")
 		    {
 			    echo "<tr><td><b>".$info['cn']."</b></td>";  
 				echo "<td colspan='4'><a href='viewprofile.php?title=employee&uid=".$checkempnum."'></b>".$info['employeenumber']."</b></a> already exists.</td></tr>"; 
                 return false;	
 			}
 			//entry is already present but certain attributes should be added
-			else if ($checkstudnum == "ADDattr") {
+			else if ($checkempnum == "ADDattr") {
 				$info2['employeenumber'] = $info['employeenumber'];
 				$info2['employeetype'] = $info['employeetype'];
 				$info2['objectclass'] = "UPLBEmployee";
@@ -203,7 +203,7 @@ function generatepassword() {
  				$addr = addattributes($info2,$info['cn'],$info['uid']);
 			}
 			//entry is disabled
-			else if($checkstudnum == "AcctDisabled"){
+			else if($checkempnum == "AcctDisabled"){
 				echo "<tr><td>".$info['cn']."</td>";  
 				echo "<td colspan='4'><a href='viewprofile_dis.php?title=employee&uid=".$info['uid']."'></b>".$info['studentnumber']."</b></a> is inactive.</td></tr>"; 
 	            return false;	

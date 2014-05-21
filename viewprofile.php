@@ -89,19 +89,23 @@
 				     <h1 class="pull-left"> <?php echo $uid?> </h1>
 					 <!-- Edit and Delete linkk on the profile-->
 					 <div class="pull-left" style="margin-left:300px;">
-					     <button class="btn btn-link btn-large" id="editButton" data-toggle="modal" data-target="#editModal"><i class="icon-edit"></i>Edit</button>
-						<?php
-							if(($title=='student' && $entries[0]['activestudent'][0]=='TRUE') || ($title=='employee' && $entries[0]['activeemployee'][0]=='TRUE'))
-						 		echo "<button class='btn btn-link btn-large' id='confirmButton'><i class='icon-remove'></i>Disable</button>";
-						 else 
-						 		echo "<button class='btn btn-link btn-large' id='confirmButton'><i class='icon-ok'></i>Activate</button>";
+					    <?php
+					    	if($title!='alumni'){
+					     	echo '<button class="btn btn-link btn-large" id="editButton" data-toggle="modal" data-target="#editModal"><i class="icon-edit"></i>Edit</button>';
+								if(($title=='student' && $entries[0]['activestudent'][0]=='TRUE') || ($title=='employee' && $entries[0]['activeemployee'][0]=='TRUE'))
+							 		echo "<button class='btn btn-link btn-large' id='confirmButton'><i class='icon-remove'></i>Disable</button>";
+							 	else 
+							 		echo "<button class='btn btn-link btn-large' id='confirmButton'><i class='icon-ok'></i>Activate</button>";
+				     		}
 				     	?>
 				     </div>
 				   <?php
 						   if($title=='student')
 						     include('frag_viewprofilestudent.php');
 						   else if ($title=='employee')
-						     include('frag_viewprofileemployee.php');	 
+						     include('frag_viewprofileemployee.php');
+						 	else if ($title=='alumni')
+						 	 include('frag_viewprofilealumni.php');
 			       ?>
 
                 

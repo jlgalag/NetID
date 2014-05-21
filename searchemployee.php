@@ -211,6 +211,7 @@
 							   
 							   </tr>
 						</table>
+						<input type="hidden" id="hiddenactiverole" name="activerole" value="<?php echo $activerole?>"/>
 						<button class="btn btn-primary pull-right" style="margin-right:10px;" type="submit" name="searchemployeebutton"><i class="icon-search icon-white"></i>  Search</button>
 															
 					</form>	

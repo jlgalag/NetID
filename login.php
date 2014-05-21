@@ -16,7 +16,7 @@
 	$result = ldap_search($ldapconn, "ou=people,".$ldapconfig['basedn'], "uid=".$userUid);
 	$entries = ldap_get_entries($ldapconn, $result);
 	$rolecount = $entries['count'];
-	if($rolecount > 0){
+	if($rolecount == 1){
 		$uidNum = $entries[0]['uidnumber'][0];
 
 		if($ldapconn){
@@ -24,9 +24,8 @@
 			$bind2 = ldap_bind($ldapconn, "uniqueIdentifierUPLB=".$uidNum.",ou=people,dc=uplb,dc=edu,dc=ph",$userPassword);
 			
 			if(!$bind2){
-				echo "<h4>Invalid Username or Password.</h4>";
-				//redirect('index.php');	
-				
+				echo "<h4>Incorrect Password or Username</h4>";				
+				redirect('index.php?auth=false');
 			}
 			else {
 				session_start();   
@@ -76,8 +75,6 @@
 				redirect('home.php');
 			}
 		}
-	}else{
-		echo "Invalid Username or Password";
 	}
 
 

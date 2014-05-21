@@ -390,7 +390,7 @@ function addstudent(){
 					cn : info['cn'],
 				 	func: 'checkstudentnumber' },
 			    success: function(data){
-					if($.trim(data)=="OK"){
+					if($.trim(data)=='OK'){
 
 						msg = "<table class='table table-condensed'>"
 						for (var key in info) {   
@@ -422,7 +422,7 @@ function addstudent(){
 									}
 								})
 					}
-					else if($.trim(data)=="ADD"){
+					else if($.trim(data)=='ADD'){
 						var uniqueidentifieruplb = '';
 						var msg="", msg1="", confirmmsg="";
 
@@ -546,7 +546,7 @@ function addemployee(){
 					cn : info['cn'],
 				 	func: 'checkemployeenumber' },
 			    success: function(data){
-					if($.trim(data)=="OK"){
+					if($.trim(data)=='OK'){
 
 						msg = "<table class='table table-condensed'>"
 						for (var key in info) {   
@@ -579,7 +579,7 @@ function addemployee(){
 									}
 								})
 					}
-					else if($.trim(data)=="ADD"){
+					else if($.trim(data) == 'ADD'){
 						var uniqueidentifieruplb = '';
 
 						info1= {
@@ -759,6 +759,7 @@ function editentry(title, dn)
 
 function searchstudent(back){
     var info, option, count=0;
+    var role = document.getElementById('hiddenactiverole').value.trim();
 	info={
         "uid" : 		document.getElementById('searchstudentuid').value.trim(),
 		"givenname" :	document.getElementById('searchstudentgivenname').value.trim(),
@@ -882,7 +883,8 @@ function searchstudent(back){
 						data: 
 						{   filter: filter,
 						    title: 'student',
-						    func: 'search' },
+						    func: 'search',
+							activerole: role},
 					        success: function(data){
 							
 								    //window.location = "viewprofile.php?uid=" + info['uid']+ "&title=" + title;
@@ -896,6 +898,7 @@ function searchstudent(back){
 	
 function searchemployee(back){
     var info, option, count=0;
+    var role = document.getElementById('hiddenactiverole').value.trim();
 	info={
         "uid" : 		document.getElementById('searchemployeeuid').value.trim(),
 		"givenname" :	document.getElementById('searchemployeegivenname').value.trim(),
@@ -1018,7 +1021,8 @@ function searchemployee(back){
 						data: 
 						{   filter: filter,
 						    title: 'employee',
-						    func: 'search' },
+						    func: 'search',
+							activerole: role },
 					        success: function(data){
 							
 								    //window.location = "viewprofile.php?uid=" + info['uid']+ "&title=" + title;

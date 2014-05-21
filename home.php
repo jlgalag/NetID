@@ -53,6 +53,8 @@
 			   $title=$_SESSION['title'] ;
 			   if($userRole=='student')
 			     include 'frag_profilestudent.php';
+			 	else if($userRole=='alumni')
+			 	 include 'frag_profilealumni.php';
 			   else
 			     include 'frag_profileemployee.php';
 			?>

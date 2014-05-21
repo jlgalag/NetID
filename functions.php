@@ -319,7 +319,6 @@
 	  $count2 = ldap_count_entries($ldapconn, $sr2).'</td>';
 
 	  if($count > 0)  echo "Username or Employee Number already exists.";
-
 	  else if ($count2 > 0)  echo "ADD";
 	  else echo "OK";
 	}
@@ -346,7 +345,7 @@
 	* 		   String - $dn 	 distinguished name of an LDAP entity
 	*
 	*/
-     function addentry($info, $dn){
+     function f($info, $dn){
         global $ldapconn, $ldapconfig, $userUid, $conn;
         $userpassword = $info['userpassword'];
 	    $info["objectclass"][0] = "UPLBEntity";
@@ -476,7 +475,7 @@
 	}
    
 
-     function searchstudent($filter){
+     function searchstudent($filter, $role){
 	   global $ldapconn;
 	   $rowNum = 0;
 
@@ -516,9 +515,12 @@
 								                 <th>Name</th>
 								                 <th>Student Number</th>
 												 <th>Type</th>
-								                 <th>Mail</th>
+								                 <th>Mail</th>';
+								                if($role==('ADMIN' || 'OUR')){
+								               		echo  '<th>Status</th>
 								                 <th>Undergrad</th>
 								            </tr>';
+								        }else echo '</tr>';
 									    
 									for($i=0; $i<count($entries)-1; $i++){
 									   echo "<tr id='".$i."'>";
@@ -530,11 +532,13 @@
 											//check if student has mail 
 										    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
 										    else echo "<td></td>";
+										   	if($role==('ADMIN' || 'OUR')){
 										    echo "<td id='enable_account' value='".$entries[$i]['activestudent'][0]."'><button class='btn btn-primary' id='enableButton' onclick='enableStudentAccount(".$i.")'>";
 										    		if($entries[$i]['activestudent'][0]=='TRUE') echo "Deactivate";
 										    		else echo "Activate";
 										    		echo" </button></td>";
 									    	echo "<td id='alumniAccount'><button class='btn btn-primary' onclick='addAlumniAttributes(".$i.")'><i class='icon-remove'></i></button></td>";
+									    	}
 									    echo "</tr>";
 									   //$rowNum++;
 					                }
@@ -546,7 +550,7 @@
 	} 
 	
 	
-	 function searchemployee($filter){
+	 function searchemployee($filter, $role){
 	   global $ldapconn;
 
  	   //$editmail = array("mail" => array($newmail));
@@ -586,9 +590,11 @@
 								                 <th>Name</th>
 								                 <th>Employee Number</th>
 												 <th>Type</th>
-								                 <th>Mail</th>
-								                 <th>Status</th>
+								                 <th>Mail</th>';
+								            if($role==('ADMIN' || 'HRDO')){
+								               echo  '<th>Status</th>
 								            </tr>';
+								        	}else echo '</tr>';
 									    
 									for($i=0; $i<count($entries)-1; $i++){
 									   echo "<tr id='".$identifier."'>";
@@ -599,10 +605,12 @@
 											//check if student has mail 
 										    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
 										    else echo "<td></td>";
+											if($role==('ADMIN' || 'HRDO')){
 											echo "<td id='enable_account' value='".$entries[$i]['activeemployee'][0]."'><button class='btn btn-primary' id='enableButton' onclick='enableEmployeeAccount(".$i.")'>";
 										    		if($entries[$i]['activeemployee'][0]=='TRUE') echo "Deactivate";
 										    		else echo "Activate";
 										    		echo" </button></td>";
+										   	}
 											// /else echo "<td>Inactive</td>";
 									    echo "</tr>";
 									    //$rowNum++;
@@ -936,8 +944,9 @@
         case 'search':
                     $filter = $_POST['filter'];
                     $title = $_POST['title'];
-                    if($title=='student') searchstudent($filter);					
-                    else if ($title=='employee') searchemployee($filter);					
+                    $role = $_POST['activerole'];
+                    if($title=='student') searchstudent($filter, $role);					
+                    else if ($title=='employee') searchemployee($filter, $role);					
 					break;
 		
 		case 'deleterole':
