@@ -1,14 +1,3 @@
-<script type=" text/javascript">
-		$(function() {
-					$('#confirmButton').click(function () {
-	           	bootbox.confirm('Are you sure you want to ',
-	           		function(result) {
-	           		});
-
-				});
-			});
-</script>
-
 <?php
     require 'tools/PHPMailer_5.2.4/class.phpmailer.php';
    	require 'ldap_config.php'; 
