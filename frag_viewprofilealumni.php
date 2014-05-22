@@ -27,6 +27,14 @@
 						echo "<td><span  id='mail'>".$entries[0]["mail"][0]; 
 				        echo "</td></tr>";
 						
+				        echo "<tr><td></td>";
+						echo "<td><a id='displayChangeSQForm', href='javascript:toggleChangeSQForm();'>Change Security Question</a>";
+						echo '<div id="changeSQNotif">
+			                  </div>';
+						
+						include 'frag_changesecurityquestionform.php';
+						echo "</td></tr>";
+						
 						echo "<tr><td></td>";
 						if($activerole=='ADMIN'){
 						echo "<td><a id='displayChangePwdForm', href='javascript:toggleChangePwdForm();'>Change Password</a>";

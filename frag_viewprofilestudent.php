@@ -32,17 +32,25 @@
 						echo "<td><span  id='mail'>".$entries[0]["mail"][0]; 
 				        echo "</td></tr>";
 						
+				        echo "<tr><td></td>";
+						echo "<td><a id='displayChangeSQForm', href='javascript:toggleChangeSQForm();'>Change Security Question</a>";
+						echo '<div id="changeSQNotif">
+			                  </div>';
+						
+						include 'frag_changesecurityquestionform.php';
+						echo "</td></tr>";
+
 						echo "<tr><td></td>";
 						if($activerole=='ADMIN'){
 						echo "<td><a id='displayChangePwdForm', href='javascript:toggleChangePwdForm();'>Change Password</a>";
-						
-						
 						echo '<div id="changePwdNotif">
 			                     
 			                  </div>';
 						$changeown=false;  //flag to determine if user is changing his own password; use to determine which form to display	  
 						require 'frag_changepasswordform.php'; }
 						echo "</td></tr>";
+
+
 					
 		            ?>	
                   </table>

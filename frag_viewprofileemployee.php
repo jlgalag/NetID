@@ -19,7 +19,6 @@
 						echo "<td>".$entries[0]["ou"][0]."</td>";
 						echo "</tr>";
 						 
-						 
 						echo "<tr>";
 			            echo "<td>College/Office</td>";
 						echo "<td>".$group."</td>";
@@ -28,6 +27,14 @@
 						echo "<tr>";
 			            echo "<td>Email Address</td>";
 						echo "<td><span  id='mail'>".$entries[0]["mail"][0];
+						echo "</td></tr>";
+						
+						echo "<tr><td></td>";
+						echo "<td><a id='displayChangeSQForm', href='javascript:toggleChangeSQForm();'>Change Security Question</a>";
+						echo '<div id="changeSQNotif">
+			                  </div>';
+						
+						include 'frag_changesecurityquestionform.php';
 						echo "</td></tr>";
 						
 						echo "<tr><td></td>";

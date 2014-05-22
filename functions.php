@@ -341,7 +341,7 @@
 	    	$info["objectclass"][1] = "UPLBEmployee";
 	    }
 
-	    $info['securityquestion'] = encrypt($info['securityquestion']);
+	    $info['securityquestion'] = $info['securityquestion'];
 	    $info['securityanswer'] = encrypt($info['securityanswer']);
 		$info['userpassword'] = encrypt($info['userpassword']);
 
@@ -403,7 +403,7 @@
 	    	$info["objectclass"][1] = "UPLBEmployee";
 	    }
 
-	    $info['securityquestion'] = encrypt($info['securityquestion']);
+	    $info['securityquestion'] = $info['securityquestion'];
 	    $info['securityanswer'] = encrypt($info['securityanswer']);
 		$info['userpassword'] = encrypt($info['userpassword']);
 
@@ -894,6 +894,83 @@
 
 	}
 	
+	/**
+	*	Function to be used when user changes his own security question
+	*
+	*	@param String - $dn 	distinguished name of an LDAP entity
+	* 		   Array - $pwd 	current password 
+	*		   String - $mail 	email address of the user
+	*		   Array - $sec 	security question, security answer
+	*
+	*/
+	 function changeownsq($dn, $pwd, $mail, $sec){
+		global $ldapconn,$conn,$userUid;
+	 
+			$res = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph","uid=".$userUid);
+			$entries = ldap_get_entries($ldapconn, $res);
+			$rolecount = $entries['count'];
+			$uidNum = $entries[0]['uidnumber'][0];
+
+			$bind3 = ldap_bind($ldapconn, "uniqueIdentifierUPLB=".$uidNum.",ou=people,dc=uplb,dc=edu,dc=ph",$pwd['inputPwd']);
+
+			if(!$bind3){ 
+				echo "<p class='changesqnotif'>Incorrect Password</p>";
+			}
+			else{
+		            
+		            $securityquestion= array("securityquestion" => array($sec['securityquestion']));
+		            $res= ldap_modify($ldapconn, $dn, $securityquestion);
+		            if($res) echo "Successfully modified security question<br/>";
+		            else echo ldap_error($ldapconn);
+
+		            ldap_unbind($bind3);
+		            $bind3 = ldap_bind($ldapconn,"cn=admin,dc=uplb,dc=edu,dc=ph","testtesttest");
+
+		            $securityanswer= array("securityanswer" => array($sec['securityanswer']));
+		            $res= ldap_modify($ldapconn, $dn, $securityanswer);
+		            if($res) echo "Successfully modified security answer";
+		            else echo ldap_error($ldapconn);
+		             ldap_unbind($bind3);
+		    }
+		  
+		  mysqli_close($conn);
+    }
+
+    /**
+	*	Function to be used when user changes others security question
+	*
+	*	@param String - $dn 	distinguished name of an LDAP entity
+	* 		   Array - $pwd 	current password 
+	*		   String - $mail 	email address of the user
+	*		   Array - $sec 	security question, security answer
+	*
+	*/
+	 function changeothersq($dn, $sec){
+		global $ldapconn,$conn,$userUid;
+	 
+			$res = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph","uid=".$userUid);
+			$entries = ldap_get_entries($ldapconn, $res);
+			$rolecount = $entries['count'];
+			$uidNum = $entries[0]['uidnumber'][0];
+		            
+            $securityquestion= array("securityquestion" => array($sec['securityquestion']));
+            $res= ldap_modify($ldapconn, $dn, $securityquestion);
+            if($res) echo "Successfully modified security question<br/>";
+            else echo ldap_error($ldapconn);
+
+            ldap_unbind($bind3);
+            $bind3 = ldap_bind($ldapconn,"cn=admin,dc=uplb,dc=edu,dc=ph","testtesttest");
+
+            $securityanswer= array("securityanswer" => array($sec['securityanswer']));
+            $res= ldap_modify($ldapconn, $dn, $securityanswer);
+            if($res) echo "Successfully modified security answer";
+            else echo ldap_error($ldapconn);
+             ldap_unbind($bind3);
+		  
+		  mysqli_close($conn);
+    }
+
+
     // function is the variable passed by ajax, it will then be the basis of which function to execute
     $function = $_POST['func']; 
 	
@@ -1047,8 +1124,22 @@
                     addattr($info, $dn, $uid);
                     removestudentattr($dn, $uid);
                     break;	
+        case 'changeownsq':
+        			$dn = $_POST['dn'];
+					$mail = $_POST['mail'];
+					$pwd['userPwd'] = $_POST['userpassword'];
+					$pwd['inputPwd'] = $_POST['pwd'];
+					$sec['securityquestion'] = $_POST['securityquestion'];
+					$sec['securityanswer'] = encrypt($_POST['securityanswer']);
+                    changeownsq($dn, $pwd, $mail, $sec);
+					break;
 
-                    			    
+		case 'changeothersq':
+        			$dn = $_POST['dn'];
+					$sec['securityquestion'] = $_POST['securityquestion'];
+					$sec['securityanswer'] = encrypt($_POST['securityanswer']);
+                    changeothersq($dn, $sec);
+					break;                    			    
 	}
 	
 ?>

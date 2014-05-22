@@ -50,6 +50,85 @@ function editmail(dn)
 	   }
 }
 
+
+//This function shows or hides the form for changing user password.
+function toggleChangeSQForm() {
+		var cpDiv = document.getElementById("changeSQForm");
+		var emDiv = document.getElementById("editMailForm");
+		if(cpDiv.style.display == "block") {
+	    		cpDiv.style.display = "none";
+			    document.getElementById ("cpForm").reset();
+	  	}
+		else {
+			cpDiv.style.display = "block";
+		    if(emDiv != undefined)
+				emDiv.style.display = "none";
+		}
+}	
+
+//This function is called when the change password form is submitted ; user change his own password
+function changeownsq(dn)
+{
+  var mail = document.getElementById('sendtomail').value.trim();
+  var userpassword = document.getElementById('userpassword').value.trim();
+  var secAns = document.getElementById('inputSecurityAnswer').value.trim();
+  var secQuestion = document.getElementById('hiddenSecurityQuestion').value.trim();
+
+  if(secQuestion=="") secQuestion = document.getElementById('inputSecurityQuestion').value.trim();
+
+	//test
+	//bootbox.alert(dn+" "+mail+" "+userpassword+" "+secQuestion+" "+secAns);
+
+    $.ajax({
+	    type: "POST",
+		//async: false,
+	    url: 'functions.php',
+	    //encodeURIComponent is to keep the '+' from changing to ' '.
+		data: {
+		  func: 'changeownsq',
+		  dn: dn,
+		  mail: mail,
+		  userpassword : userpassword,
+		  pwd : document.getElementById('pwd').value.trim(),
+		  securityquestion :    secQuestion,
+		  securityanswer :    secAns
+		},
+		success: function(data){
+			toggleChangeSQForm();
+			bootbox.alert($.trim(data));
+		}
+	});
+}	
+
+function changeothersq(dn)
+{
+
+  var secAns = document.getElementById('inputSecurityAnswer').value.trim();
+  var secQuestion = document.getElementById('hiddenSecurityQuestion').value.trim();
+
+  if(secQuestion=="") secQuestion = document.getElementById('inputSecurityQuestion').value.trim();
+
+	//test
+	//bootbox.alert(dn+" "+mail+" "+userpassword+" "+secQuestion+" "+secAns);
+
+    $.ajax({
+	    type: "POST",
+		//async: false,
+	    url: 'functions.php',
+	    //encodeURIComponent is to keep the '+' from changing to ' '.
+		data: {
+		  func: 'changeothersq',
+		  dn: dn,
+		  securityquestion :    secQuestion,
+		  securityanswer :    secAns
+		},
+		success: function(data){
+			toggleChangeSQForm();
+			bootbox.alert($.trim(data));
+		}
+	});
+}	
+
 //This function shows or hides the form for changing user password.
 function toggleChangePwdForm() {
 		var cpDiv = document.getElementById("changePwdForm");
