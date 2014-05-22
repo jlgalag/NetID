@@ -7,7 +7,7 @@
        global $ldapconn;
 	   
 
-	   $res = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", "(ou=".$name.")");
+	   $res = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", "(&(title=student)(course=".$name."))");
         ldap_sort($ldapconn, $res, "cn");
 	   $entries = ldap_get_entries($ldapconn, $res);
 	   echo "<h4>".$name."</h4>";
@@ -60,7 +60,7 @@
     function viewemployeelist($gidnumber, $name){
        global $ldapconn;
 	   
-	   $res = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", "(gidnumber=".$gidnumber.")");
+	   $res = ldap_search($ldapconn, "ou=people,dc=uplb,dc=edu,dc=ph", "(&(title=employee)(gidnumber=".$gidnumber."))");
         ldap_sort($ldapconn, $res, "cn");
 	   $entries = ldap_get_entries($ldapconn, $res);
 	   echo "<h4>".$name."</h4>";

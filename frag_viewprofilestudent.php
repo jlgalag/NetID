@@ -105,7 +105,7 @@
 							     <select name="gidnumber" id="editGidnumber" class="input-xlarge" onchange="onEditCollegeChange('<?php echo $entries[0]['ou'][0] ?>')"  >
 									  <?php
 									    // show the list of colleges
-									      $conn = mysqli_connect('localhost','root','','netid');
+									      //$conn = mysqli_connect('localhost','root','','netid');
 									    // Check connection
 										if (!mysqli_connect_errno($conn)){
 											$query="SELECT * FROM college ORDER BY gidnumber";
@@ -118,7 +118,7 @@
 											}	
 										}
 										else echo "<option>Cannot connect to the database</option>";
-										mysqli_close($conn);
+										//mysqli_close($conn);
 									 ?>
 								</select></div>
 						  </div>
@@ -128,7 +128,7 @@
 						    
 							  <?php
 							      // show the list of degree programs based on the selected college
-							      $conn = mysqli_connect('localhost','root','','netid');
+							      //$conn = mysqli_connect('localhost','root','','netid');
 								  if (!mysqli_connect_errno($conn)){
 									$query = "SELECT * FROM degreeprograms WHERE gidnumber=".$entries[0]['gidnumber'][0];
 									$degreeprograms = mysqli_query($conn, $query);

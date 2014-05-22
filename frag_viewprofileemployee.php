@@ -105,7 +105,7 @@
 							     <select name="gidnumber" id="editGidnumber" class="input-xlarge"  >
 									 <?php
 									    // show the list of colleges and offices in a select field
-									      $conn = mysqli_connect('localhost','root','','netid');
+									      //$conn = mysqli_connect('localhost','root','','netid');
 									    // Check connection
 										if (!mysqli_connect_errno($conn)){
 										    $query="SELECT * FROM offices ORDER BY gidnumber";

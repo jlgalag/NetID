@@ -39,7 +39,7 @@
 
 						 
 						  <?php 
-						       $conn = mysqli_connect('localhost','root','','netid');
+						       //$conn = mysqli_connect('localhost','root','','netid');
 									    // Check connection
 										if (!mysqli_connect_errno($conn)){
 											$query="SELECT * FROM college ORDER BY gidnumber";
@@ -60,7 +60,7 @@
 												}
                                              
 											
-                                            mysqli_close($conn); 											
+                                            //mysqli_close($conn); 											
 										}
 										else echo "<option>Cannot connect to the database</option>";
 								
@@ -82,7 +82,7 @@
 				   <div class="row-fluid">
 					    <div class="well sidebar-nav span2">
 					      <?php 
-						       $conn = mysqli_connect('localhost','root','','netid');
+						       //$conn = mysqli_connect('localhost','root','','netid');
 									    // Check connection
 										if (!mysqli_connect_errno($conn)){
 											echo "<ul class='unstyled'>";

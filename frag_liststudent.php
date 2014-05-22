@@ -108,6 +108,7 @@
 											echo 	"<td>".$entries[$i]['studenttype'][0]."</td>";
 											//check if student has mail 
 										    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
+										    else echo "<td></td>";
 									    echo "</tr>";
 					                }
 					         echo '</table>';

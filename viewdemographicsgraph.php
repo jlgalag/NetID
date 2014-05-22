@@ -59,7 +59,7 @@
 												    <ul class="dropdown-menu">
 												       <?php
 													   // show dropdown of all colleges
-													   $conn = mysqli_connect('localhost','root','','netid');
+													  // $conn = mysqli_connect('localhost','root','','netid');
 														    // Check connection
 															if (!mysqli_connect_errno($conn)){
 																$query="SELECT * FROM college ORDER BY gidnumber";

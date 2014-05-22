@@ -115,6 +115,7 @@
 											echo 	"<td>".$entries[$i]['ou'][0]."</td>";
 										    //check if employee has mail 
 											if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
+											else echo "<td></td>";
 									    echo "</tr>";
 					                }
 					         echo '</table>';

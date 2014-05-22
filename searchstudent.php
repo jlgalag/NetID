@@ -173,7 +173,7 @@
 								 <select name="studentgidnumber" id="searchstudentgidnumber" class="input-medium" >
 									 <?php
 									      // show list of colleges
-									      $conn = mysqli_connect('localhost','root','','netid');
+									      //$conn = mysqli_connect('localhost','root','','netid');
 									    // Check connection
 										if (!mysqli_connect_errno($conn)){
 											$query="SELECT * FROM college ORDER BY gidnumber";

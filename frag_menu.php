@@ -1,7 +1,8 @@
-<?php
+<?php	
     // create dropdown of degree programs based on the given gidnumber/college
 	function showdegreeprograms($gidnumber, $iden){
-		 $conn = mysqli_connect('localhost','root','','netid');
+		global $conn;
+		 //$conn = mysqli_connect('localhost','root','','netid');
 	    // Check connection
 		if (!mysqli_connect_errno($conn)){
 			echo '<ul class="dropdown-menu">';      
@@ -22,7 +23,8 @@
   
     //create dropdown of colleges and degree programs (CAS - BSCS, BSBIO..)
     function showcollegesanddegreeprograms($iden){
-        $conn = mysqli_connect('localhost','root','','netid');
+    	global $conn;
+        //$conn = mysqli_connect('localhost','root','','netid');
 	    // Check connection
 		if (!mysqli_connect_errno($conn)){
 			$query="SELECT * FROM college ORDER BY gidnumber";
@@ -46,7 +48,8 @@
   }  
   // create dropdown of all offices (OC, OVCI..)
   function showoffices(){
-     $conn = mysqli_connect('localhost','root','','netid');
+  	global $conn;
+     //$conn = mysqli_connect('localhost','root','','netid');
 	    // Check connection
 		if (!mysqli_connect_errno($conn)){
 			$query="SELECT * FROM offices ORDER BY gidnumber";
@@ -67,7 +70,8 @@
   }   
     // create drop down of all colleges (CA, CAS... )  
     function showcolleges(){
-	   $conn = mysqli_connect('localhost','root','','netid');
+    	global $conn;
+	   //$conn = mysqli_connect('localhost','root','','netid');
 	    // Check connection
 		if (!mysqli_connect_errno($conn)){
 			$query="SELECT * FROM college ORDER BY gidnumber";

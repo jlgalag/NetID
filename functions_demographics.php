@@ -4,7 +4,7 @@
    
 
    function createcollegeTable($gidnumber, $name){
-      global $ldapconn, $ldapconfig;
+      global $ldapconn, $ldapconfig, $conn;
 	    $cachefile = 'files/cache/demog'.$name.'stud.cache'; // e.g. cache/index.php.cache
 		$cachetime = 120 * 60 * 12 ; // 24 hours
 
@@ -16,7 +16,7 @@
 		}
 		else{
 			ob_start();	 
-			  $conn = mysqli_connect('localhost','root','','netid');			
+			  ////$conn = mysqli_connect('localhost','root','','netid');			
 			   // Check connection
 				if (!mysqli_connect_errno($conn)){
 					 echo "<table id='datatable' style='display:none'>";
@@ -48,7 +48,7 @@
    
    
    function createallstudentstable(){
-      global $ldapconn, $ldapconfig;
+      global $ldapconn, $ldapconfig, $conn;
 
 	    $cachefile = 'files/cache/demogallstud.cache'; // e.g. cache/index.php.cache
 		$cachetime = 120 * 60 * 12 ; // 24 hours
@@ -61,7 +61,7 @@
 		}
 		else{
 			ob_start();	  	  
-			  $conn = mysqli_connect('localhost','root','','netid');			
+			  //$conn = mysqli_connect('localhost','root','','netid');			
 			   // Check connection
 				if (!mysqli_connect_errno($conn)){
 					 echo "<table id='datatable' style='display:none'>";
@@ -92,7 +92,7 @@
    }
    
    function createallemployeestable(){
-      global $ldapconn, $ldapconfig;
+      global $ldapconn, $ldapconfig, $conn;
 	  
 	    $cachefile = 'files/cache/demogallemp.cache'; // e.g. cache/index.php.cache
 		$cachetime = 120 * 60 * 12 ; // 24 hours
@@ -105,7 +105,7 @@
 		}
 		else{
 			ob_start();	 
-		    $conn = mysqli_connect('localhost','root','','netid');			
+		    //$conn = mysqli_connect('localhost','root','','netid');			
 		   // Check connection
 			if (!mysqli_connect_errno($conn)){
 				 echo "<table id='datatable2' style='display:none'>";
@@ -148,7 +148,7 @@
    }
    
     function createcolleegemployeestable(){
-      global $ldapconn, $ldapconfig;
+      global $ldapconn, $ldapconfig, $conn;
 	  
 	    $cachefile = 'files/cache/demogcolemp.cache'; // e.g. cache/index.php.cache
 		$cachetime = 120 * 60 * 12 ; // 24 hours
@@ -161,7 +161,7 @@
 		}
 		else{
 			ob_start();	 
-			  $conn = mysqli_connect('localhost','root','','netid');			
+			  //$conn = mysqli_connect('localhost','root','','netid');			
 			   // Check connection
 				if (!mysqli_connect_errno($conn)){
 					 echo "<table id='datatable2' style='display:none'>";
@@ -196,7 +196,7 @@
    }
    
    function createofficeeemployeestable(){
-     global $ldapconn, $ldapconfig;
+     global $ldapconn, $ldapconfig, $conn;
 	    $cachefile = 'files/cache/demogoffemp.cache'; // e.g. cache/index.php.cache
 		$cachetime = 120 * 60 * 12 ; // 24 hours
 
@@ -208,7 +208,7 @@
 		}
 		else{
 			ob_start();
-			  $conn = mysqli_connect('localhost','root','','netid');			
+			  //$conn = mysqli_connect('localhost','root','','netid');			
 			   // Check connection
 				if (!mysqli_connect_errno($conn)){
 					 echo "<table id='datatable2' style='display:none'>";

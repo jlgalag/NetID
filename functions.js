@@ -149,17 +149,6 @@ function generatesecurityquestion() {
 	      * validchars.length));
 }
 
-// generate random security answer when adding an entry (student/employee)
-function generatesecurityanswer() {
-	var length = 10;
-	var validchars="abcdefghijklmnopqrstuvwxyz";
-	var count;
-	   document.getElementById('inputSecurityAnswer').value = "";
-	  for (count = 1; count < length; count++)
-	    document.getElementById('inputSecurityAnswer').value += validchars.charAt(Math.floor(Math.random()
-	      * validchars.length));
-}
-
 
 // show degree programs (add)
 function onCollegeChange(){
@@ -356,6 +345,11 @@ function addstudent(){
 			    break;
 			  }
 			}
+
+		var secQuestion = document.getElementById('hiddenSecurityQuestion').value.trim();
+
+		if(secQuestion=="") secQuestion = document.getElementById('inputSecurityQuestion').value.trim();
+	    
 	     info= {
 		       "uid" :            document.getElementById('inputUsername').value.trim(),
 		       "cn" :              cn,
@@ -369,7 +363,7 @@ function addstudent(){
 		       "gidnumber" :       document.getElementById('inputGidnumber').value.trim(),
 		       "course" :              document.getElementById('inputOu').value.trim(),
 		       "college" : 			el.options[el.selectedIndex].text,
-		       "securityquestion" :    document.getElementById('inputSecurityQuestion').value.trim(),
+		       "securityquestion" :    secQuestion,
 		       "securityanswer" :    document.getElementById('inputSecurityAnswer').value.trim(),
 		       "userpassword" :    document.getElementById('inputUserpassword').value.trim(),    // to be converted to ssha in the php file
 		       "uniqueIdentifierUPLB" :       document.getElementById('hiddenUidnumber').value.trim(),
@@ -513,6 +507,10 @@ function addemployee(){
 			  }
 			}
 
+		var secQuestion = document.getElementById('hiddenSecurityQuestion').value.trim();
+
+		if(secQuestion=="") secQuestion = document.getElementById('inputSecurityQuestion').value.trim();
+
 	     info= {
 		       "uniqueIdentifierUPLB" :     document.getElementById('hiddenUidnumber').value.trim(),
 		       "uid" :            document.getElementById('inputUsername').value.trim(),
@@ -527,7 +525,7 @@ function addemployee(){
 		       "gidnumber" :       document.getElementById('inputGidnumber').value.trim(),
 		       "ou" :              document.getElementById('inputOu').value.trim(),
 		       "o" : 				el.options[el.selectedIndex].text,
-		       "securityquestion" :    document.getElementById('inputSecurityQuestion').value.trim(),
+		       "securityquestion" :   secQuestion,
 		       "securityanswer" :    document.getElementById('inputSecurityAnswer').value.trim(),
 		       "userpassword" :    document.getElementById('inputUserpassword').value.trim(),    // to be converted to md5password in the php file
 		       "uidnumber" :       document.getElementById('hiddenUidnumber').value.trim(),
@@ -1231,4 +1229,16 @@ function auditdate(){
 				   $('#logs').html(data);
 				}
 	});
+}
+
+function changeSecQuestion(){
+
+	var option = $("#inputSecurityQuestion option:selected");
+
+	if(option.val().trim() == "own")	$("#hiddenSecurityQuestion").show();
+	else{
+		$("#hiddenSecurityQuestion").val("");
+		$("#hiddenSecurityQuestion").hide();
+	}
+
 }

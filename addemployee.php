@@ -122,7 +122,7 @@
 							     <select name="gidnumber" id="inputGidnumber" class="input-xlarge"  >
 									 <?php
 									     // show list of colleges and offices
-									      $conn = mysqli_connect('localhost','root','','netid');
+									      //$conn = mysqli_connect('localhost','root','','netid');
 									    // Check connection
 										if (!mysqli_connect_errno($conn)){
 											$query="SELECT * FROM college ORDER BY gidnumber";
@@ -154,26 +154,35 @@
 						      <input class="input-xlarge" name="ou" type="text" id="inputOu" placeholder="Office/College"  value='INSTITUTE OF COMPUTER SCIENCE'>
 						    </div>
 						  </div>		  
-						   <!-- ********************************* -->
-
+						   
 						   <div class="control-group">
-						    <label class="control-label" for="inputSecurityQuestion">Security Question</label>
-						    <div class="controls">
-						      <div class="input-append">
-							  <input class="input-large uneditable-input" name="securityQuestion" type="text" id="inputSecurityQuestion" placeholder="Security Question" >
-						      <button class="btn" type="button" id="getsecurityqbtn" onclick="javascript:generatesecurityquestion()">Get Security Question</button>
-							  </div>
-							  <br/>
+						  	  <label class="control-label" for="securityQuestion">Security Question</label>
+						  	<div class="controls">
+						     <select name="securityQuestion" id="inputSecurityQuestion"  class="input-large" onchange="changeSecQuestion()">
+						       <option value='' disabled selected style='display:none;'>Select Security Question</option>
+						       <option value="own">Create a security question</option>
+						       <option value="What was your childhood nickname?">What was your childhood nickname?</option>
+						       <option value="What is the name of your favorite childhood friend? ">What is the name of your favorite childhood friend? </option>
+						       <option value="What was the last name of your third grade teacher?">What was the last name of your third grade teacher?</option>
+						       <option value="What street did you live on in third grade?">What street did you live on in third grade?</option>
+						       <option value="What is your grandmother's first name?">What is your grandmother's first name?</option>
+						       <option value="What is your mother's middle name?">What is your mother's middle name?</option>
+						       <option value="What time of the day were you born?">What time of the day were you born?</option>
+						       <option value="What was your dream job as a child?">What was your dream job as a child?</option>
+						       <option value="What is your preferred musical genre?">What is your preferred musical genre?</option>
+						       <option value="What year did you graduate from High School?">What year did you graduate from High School?</option> 
+							  </select>
+							  <input type="text" id="hiddenSecurityQuestion" name="secQuestion" value=""/>
 							</div>
-						  </div>
+							<br/>
+						   </div>
 
 						  <div class="control-group">
 						    <label class="control-label" for="inputSecurityAnswer">Security Answer</label>
 						    <div class="controls">
 						      <div class="input-append">
 							  <input class="input-large uneditable-input" name="securityAnswer" type="text" id="inputSecurityAnswer" placeholder="Security Answer" >
-						      <button class="btn" type="button" id="getsecurityabtn" onclick="javascript:generatesecurityanswer()">Get Security Answer</button>
-							  </div>
+						      </div>
 							  <br/>
 							</div>
 						  </div>
@@ -226,6 +235,11 @@
 	    </div>
     </div>	
 
+<script>
+
+$("#hiddenSecurityQuestion").hide();
+
+</script>
 
 <?php include 'frag_footer.php'?>
   

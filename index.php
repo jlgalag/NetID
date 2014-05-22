@@ -3,7 +3,7 @@
 
 //connect to lda server and mysql
 include 'ldap_config.php'; 
-$conn = mysqli_connect('localhost','root','','netid');
+//$conn = mysqli_connect('localhost','root','','netid');
 
 // Check connection
 if (mysqli_connect_errno($conn))

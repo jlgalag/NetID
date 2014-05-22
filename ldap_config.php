@@ -9,6 +9,7 @@
 	$password = 'testtesttest';
 	//$dn= "cn=".$username $ldapconfig['basedn'];
 	$dn = "cn=admin,dc=uplb,dc=edu,dc=ph";
+	$conn = mysqli_connect('localhost','root','','netid');
 
 
 	/*Connect to ldap server 10.0.100.58*/

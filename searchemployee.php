@@ -171,7 +171,7 @@
 								<td colspan="2">
 								 <select name="employeegidnumber" id="searchemployeegidnumber" class="input-medium" >
 									<?php
-									      $conn = mysqli_connect('localhost','root','','netid');
+									      //$conn = mysqli_connect('localhost','root','','netid');
 									    // Check connection
 										if (!mysqli_connect_errno($conn)){
 										    $query="SELECT * FROM offices ORDER BY gidnumber";

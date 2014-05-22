@@ -2,7 +2,7 @@
        //Connect and bind to ldap server
 	include 'ldap_config.php'; 
 	include 'frag_sessions.php';
-   
+   	//global $conn;
     //Only User with ADMIN as role cannot view this page
 	if(!($activerole=='ADMIN'))
 	   redirect("home.php");
@@ -51,7 +51,7 @@
 							       <select name="gidnumber" id="gidnumber" class="input-large">
 									
 									 <?php
-									      $conn = mysqli_connect('localhost','root','','netid');
+									      //$conn = mysqli_connect('localhost','root','','netid');
 									    // Check connection
 										if (!mysqli_connect_errno($conn)){
 											$query="SELECT * FROM college ORDER BY gidnumber";
@@ -64,7 +64,7 @@
 											}	
 										}
 										else echo "<option>Cannot connect to the database</option>";
-										mysqli_close($conn);
+										//mysqli_close($conn);
 									 ?>
 						</select>
 							  
@@ -83,7 +83,7 @@
 						 <select name="gidnumber" id="inputGidnumber" class="input-large pull-left" onchange="onCollegeChange()" >
 									
 									 <?php
-									      $conn = mysqli_connect('localhost','root','','netid');
+									    //$conn = mysqli_connect('localhost','root','','netid');
 									    // Check connection
 										if (!mysqli_connect_errno($conn)){
 											$query="SELECT * FROM college ORDER BY gidnumber";

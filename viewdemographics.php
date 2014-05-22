@@ -6,7 +6,7 @@
 	//User with STUDENT or EMPLOYEE as role cannot view this page
 	if(!($activerole=='ADMIN'))
 	   redirect("home.php");		        
-	    $conn = mysqli_connect('localhost','root','','netid');				
+	    //$conn = mysqli_connect('localhost','root','','netid');				
 							
 ?>
 

@@ -63,7 +63,7 @@
 	                 <img src="tools/img/horredline.jpg"/>
                     
 				     <?php 
-					  $conn = mysqli_connect('localhost','root','','netid');
+					  //$conn = mysqli_connect('localhost','root','','netid');
 
 						// Check connection
 					  if (mysqli_connect_errno($conn))

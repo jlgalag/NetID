@@ -2,7 +2,7 @@
     require 'tools/PHPMailer_5.2.4/class.phpmailer.php';
    	require 'ldap_config.php'; 
 	require 'frag_sessions.php';
-    $conn = mysqli_connect('localhost','root','','netid');
+    //$conn = mysqli_connect('localhost','root','','netid');
 
 	// Check connection
 	if (mysqli_connect_errno($conn))
@@ -20,7 +20,7 @@
 		$mail->SMTPSecure = 'ssl';
 		$mail->Port = 465	;
 		$mail->Username="ace.almazar@gmail.com";
-		$mail->Password="khairilkrish";
+		$mail->Password="";
 
 		$mail->IsHTML(true); 
 
@@ -327,6 +327,61 @@
 		return $encrypted = "{SSHA}".base64_encode( sha1( $string . $salt, true) . $salt );
 	}
 
+	function addentry($info, $dn){
+        global $ldapconn, $ldapconfig, $userUid, $conn;
+        $userpassword = $info['userpassword'];
+	    $info["objectclass"][0] = "UPLBEntity";
+	    
+	    //if add as student
+	    if(isset($info['studentnumber'])){
+	    	 $info["objectclass"][1] = "UPLBStudent";
+	    }
+	    //if add as employee
+	    elseif (isset($info['employeenumber'])) {
+	    	$info["objectclass"][1] = "UPLBEmployee";
+	    }
+
+	    $info['securityquestion'] = encrypt($info['securityquestion']);
+	    $info['securityanswer'] = encrypt($info['securityanswer']);
+		$info['userpassword'] = encrypt($info['userpassword']);
+
+        $add = ldap_add($ldapconn, $dn, $info);
+        
+		if($add){
+       		//modify uidLatestNumber
+	        $dnuidnumberholder = 'cn=uidLatestNumber,ou=numberholder,dc=uplb,dc=edu,dc=ph';		
+		    $newuidnumholder = array("serialnumber" => array($info['uidnumber']));
+		    $moduid = ldap_modify($ldapconn, $dnuidnumberholder, $newuidnumholder);
+        }
+        else 	echo ldap_error($ldapconn );
+
+	    if($add && $moduid) {
+		       // add to audit log
+			   date_default_timezone_set('Asia/Manila');
+			   $query="INSERT INTO auditlog (username,timestamp, accesstype, ipaddress, affecteduser) VALUES ('".$userUid."','".date('Y-m-d H:i:s')."','insert','".$_SERVER["REMOTE_ADDR"]."','".$info['uid']."')";
+	           $insert =mysqli_query($conn, $query);
+			 
+			echo "Successfully added  <b>". $info['uid']. "</b>  to the directory. <br/>"; 
+            //SEND EMAIL
+			if($info['mail'] != NULL){
+						$subject = "UPLB NetID Account created";
+						$data = "<p>Hi ".$info['mail']."<br/><br/>".
+						            "You're UPLB NetID account has been created.". "<br/>".
+							        "Your username is <b>". $info['uid'] ."</b> and your password is <b>".$userpassword. "</b>"."<br/>". 
+									"NetID account is used by various UPLB network services, like the UPLB Wifi, for user authentication."."<br/>".
+									"Visit <\NetID web page\> and change your password right away.<br/><br/>".
+									"Sincerely,"."<br/>".
+									"UPLB NetID Account team". "<br/></p>";
+						
+						sendmail($subject ,$data, $info['mail']);	
+			}
+			else echo "Please provide an email address.<br/>";
+	    }
+		else  echo ldap_error($ldapconn); 
+	    
+		mysqli_close($conn);
+	 }	 
+
 	/**
 	*	Add an account in the server
 	*
@@ -504,14 +559,9 @@
 								                 <th>Name</th>
 								                 <th>Student Number</th>
 												 <th>Type</th>
-<<<<<<< Updated upstream
 								                 <th>Mail</th>';
 								                if($role==('ADMIN' || 'OUR')){
 								               		echo  '<th>Status</th>
-=======
-								                 <th>Mail</th>
-								                 <th>Status</th>
->>>>>>> Stashed changes
 								                 <th>Undergrad</th>
 								            </tr>';
 								        }else echo '</tr>';
