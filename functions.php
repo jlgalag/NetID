@@ -641,11 +641,12 @@
 								        	}else echo '</tr>';
 									    
 									for($i=0; $i<count($entries)-1; $i++){
-									   echo "<tr id='".$identifier."'>";
+									   echo "<tr id='".$i."'>";
 											echo 	"<td id='identifier' value='".$entries[$i]['uniqueidentifieruplb'][0]."'><a  style='color:#333333' href='viewprofile.php?title=employee&uid=".$entries[$i]['uid'][0]."'>";  
-											         echo $entries[$i]['cn'][0]."</a></td>";														  
+											         if (!($_SESSION['activerole'] =='ADMIN' || $_SESSION['activerole']=='HRDO' || $_SESSION['activerole']=='OUR')) echo "onclick='return false;'";        
+													echo $entries[$i]['cn'][0]."</a></td>";														  
 											echo 	"<td id='uid' value='".$entries[$i]['uid'][0]."'>".$entries[$i]['employeenumber'][0]."</td>";
-											echo 	"<td>".$entries[$i]['employeetype'][0]."</td>";
+											echo 	"<td id='course' value='".$entries[$i]['ou'][0]."'>".$entries[$i]['employeetype'][0]."</td>";
 											//check if student has mail 
 										    if(isset($entries[$i]['mail'])) echo 	"<td>".$entries[$i]['mail'][0]."</td>";
 										    else echo "<td></td>";

@@ -39,9 +39,11 @@
 			
 			echo "<tr><td></td>";
 			echo "<td><a id='displayChangePwdForm', href='javascript:toggleChangePwdForm();'>Change Password</a>";
-			echo '<div id="changePwdNotif">
-                     
-                  </div>';
+			echo '<div id="changePwdNotif"></div>';
+
+			echo "<tr><td></td>";
+			echo "<td><a id='displayChangePwdForm', href='javascript:toggleChangePwdForm();'>Change Password</a>";
+			echo '<div id="changePwdNotif"></div>';
 			
 			include 'frag_changepasswordform.php';
 			echo "</td></tr>";

@@ -33,7 +33,7 @@
 			echo "<td><span  id='mail'>".$entries[0]["mail"][0]."</span>   <a id='displayEditMailForm', href='javascript:toggleEditMailForm();'>(Edit)</a>"; 
 	              include 'frag_editmailform.php'; 
 			echo "</td></tr>";
-			
+
 			echo "<tr><td></td>";
 			echo "<td><a id='displayChangePwdForm', href='javascript:toggleChangePwdForm();'>Change Password</a>";
 			include 'frag_changepasswordform.php';
